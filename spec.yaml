@@ -3,7 +3,7 @@ region: nyc1
 services:
   - name: api
     dockerfile_path: api/Dockerfile
-    source_dir: .
+    source_dir: api/.
     github:
       branch: main
       deploy_on_push: true
