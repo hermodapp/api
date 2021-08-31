@@ -2,7 +2,7 @@ name: hermod
 region: nyc1
 services:
   - name: api
-    dockerfile_path: Dockerfile
+    dockerfile_path: api/Dockerfile
     source_dir: .
     github:
       branch: main
