@@ -9,12 +9,12 @@ services:
       deploy_on_push: true
       repo: cs495wifly/hermod
     health_check:
-      http_path: /health_check
+      http_path: /api/health_check
     http_port: 8000
     instance_count: 1
     instance_size_slug: basic-xxs
     routes:
-      - path: /
+      - path: /api/
     envs:
       - key: APP_DATABASE__USERNAME
         scope: RUN_TIME
@@ -31,6 +31,20 @@ services:
       - key: APP_DATABASE__DATABASE_NAME
         scope: RUN_TIME
         value: ${hermod.DATABASE}
+  - name: www
+    dockerfile_path: www/Dockerfile
+    source_dir: www/.
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: cs495wifly/hermod
+    health_check:
+      http_path: /
+    http_port: 80
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /
 databases:
   - engine: PG
     name: hermod

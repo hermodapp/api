@@ -1,3 +1,18 @@
 {
-  "db": "PostgreSQL"
+  "db": "PostgreSQL",
+  "70729179bb50697bb253231718b661b6ad6d5e57a6237406e66bb3a9363f0dff": {
+    "query": "\n        INSERT INTO users (username, email, password_hash, full_name)\n        VALUES ($1, $2, $3, $4);\n        ",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Varchar"
+        ]
+      },
+      "nullable": []
+    }
+  }
 }
