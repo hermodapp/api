@@ -1,5 +1,5 @@
 use actix_identity::Identity;
-use actix_web::{web, HttpResponse};
+use actix_web::web;
 // use chrono::NaiveDateTime;
 use serde::Serialize;
 use sqlx::PgPool;
