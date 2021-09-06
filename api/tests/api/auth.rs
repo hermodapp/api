@@ -1,22 +1,11 @@
-use crate::helpers::spawn_app;
+use crate::helpers::{login, spawn_app};
 
 #[actix_rt::test]
 async fn auth_request_with_invalid_credentials_is_rejected() {
     let app = spawn_app().await;
 
-    let client = reqwest::Client::new();
-    let response = client
-        .post(format!("{}/auth", app.address))
-        .json(&serde_json::json!({
-            "title": "Newsletter Title",
-            "content": {
-                "text": "bla bla bla",
-                "html": "<h1>Hello There</h1>"
-            }
-        }))
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = login(&app, "".to_string(), "".to_string()).await;
+
     assert_eq!(401, response.status().as_u16());
     assert_eq!(
         r#"Basic realm="publish""#,
@@ -30,20 +19,8 @@ async fn auth_request_with_nonexisting_username_is_rejected() {
     let username = "john".to_string();
     let password = "cs495".to_string();
 
-    let client = reqwest::Client::new();
-    let response = client
-        .post(format!("{}/auth", app.address))
-        .basic_auth(username, Some(password))
-        .json(&serde_json::json!({
-            "title": "Newsletter Title",
-            "content": {
-                "text": "bla bla bla",
-                "html": "<h1>Hello There</h1>"
-            }
-        }))
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = login(&app, username, password).await;
+
     assert_eq!(401, response.status().as_u16());
     assert_eq!(
         r#"Basic realm="publish""#,
@@ -54,23 +31,11 @@ async fn auth_request_with_nonexisting_username_is_rejected() {
 #[actix_rt::test]
 async fn auth_request_with_invalid_password_is_rejected() {
     let app = spawn_app().await;
-    let username = &app.test_user.username;
+    let username = app.test_user.username.to_string();
     let password = "cs495".to_string();
 
-    let client = reqwest::Client::new();
-    let response = client
-        .post(format!("{}/auth", app.address))
-        .basic_auth(username, Some(password))
-        .json(&serde_json::json!({
-            "title": "Newsletter Title",
-            "content": {
-                "text": "bla bla bla",
-                "html": "<h1>Hello There</h1>"
-            }
-        }))
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = login(&app, username, password).await;
+
     assert_eq!(401, response.status().as_u16());
     assert_eq!(
         r#"Basic realm="publish""#,
@@ -81,22 +46,11 @@ async fn auth_request_with_invalid_password_is_rejected() {
 #[actix_rt::test]
 async fn auth_request_with_valid_credentials_is_accepted() {
     let app = spawn_app().await;
-    let username = &app.test_user.username;
-    let password = &app.test_user.password;
+    let username = app.test_user.username.to_string();
+    let password = app.test_user.password.to_string();
+    println!("{}", password);
 
-    let client = reqwest::Client::new();
-    let response = client
-        .post(format!("{}/auth", app.address))
-        .basic_auth(username, Some(password))
-        .json(&serde_json::json!({
-            "title": "Newsletter Title",
-            "content": {
-                "text": "bla bla bla",
-                "html": "<h1>Hello There</h1>"
-            }
-        }))
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = login(&app, username, password).await;
+
     assert_eq!(200, response.status().as_u16());
 }

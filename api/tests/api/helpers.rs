@@ -2,12 +2,27 @@ use argon2::{password_hash::SaltString, Algorithm, Argon2, Params, PasswordHashe
 use hermod::{
     configuration::{get_configuration, DatabaseSettings},
     startup::{get_connection_pool, Application},
+    telemetry::{get_subscriber, init_subscriber},
 };
+use once_cell::sync::Lazy;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 
+// Ensure that the `tracing` stack is only initialised once using `once_cell`
+static TRACING: Lazy<()> = Lazy::new(|| {
+    let default_filter_level = "info".to_string();
+    let subscriber_name = "test".to_string();
+    if std::env::var("TEST_LOG").is_ok() {
+        let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::stdout);
+        init_subscriber(subscriber);
+    } else {
+        let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::sink);
+        init_subscriber(subscriber);
+    };
+});
+
 pub async fn spawn_app() -> TestApp {
-    // Lazy::force(&TRACING);
+    Lazy::force(&TRACING);
 
     // Launch a mock server to stand in for Postmark's API
     // let email_server = MockServer::start().await;
@@ -79,6 +94,18 @@ pub struct TestApp {
     pub test_user: TestUser,
 }
 
+impl TestApp {
+    pub async fn login(&self) -> anyhow::Result<()> {
+        login(
+            self,
+            self.test_user.username.to_string(),
+            self.test_user.password.to_string(),
+        )
+        .await;
+        Ok(())
+    }
+}
+
 pub struct TestUser {
     user_id: Uuid,
     pub username: String,
@@ -116,4 +143,14 @@ impl TestUser {
         .await
         .expect("Failed to store test user.");
     }
+}
+
+pub async fn login(app: &TestApp, username: String, password: String) -> reqwest::Response {
+    let client = reqwest::Client::new();
+    client
+        .get(format!("{}/login", app.address))
+        .basic_auth(username, Some(password))
+        .send()
+        .await
+        .expect("Failed to execute request.")
 }
