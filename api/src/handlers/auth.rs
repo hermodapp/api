@@ -3,7 +3,7 @@ use actix_web::http::{header, HeaderValue, StatusCode};
 use actix_web::{web, HttpResponse, ResponseError};
 use sqlx::PgPool;
 
-use crate::auth::validate_request_with_basic_auth;
+use crate::auth::{get_user_by_id, validate_request_with_basic_auth};
 
 pub async fn login(
     request: web::HttpRequest,
@@ -11,7 +11,10 @@ pub async fn login(
     id: Identity,
 ) -> Result<HttpResponse, ApplicationError> {
     let user_id = validate_request_with_basic_auth(request, &pool).await?;
-    id.remember(user_id.to_string());
+    let user = get_user_by_id(user_id.to_string(), &pool).await;
+    let s = serde_json::to_string(&user?)
+        .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
+    id.remember(s);
     Ok(HttpResponse::Ok().finish())
 }
 

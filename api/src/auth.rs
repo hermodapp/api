@@ -1,10 +1,25 @@
+use std::str::FromStr;
+
 use actix_web::http::HeaderMap;
 use actix_web::HttpRequest;
 use anyhow::Context;
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use sqlx::PgPool;
+use uuid::Uuid;
 
-use crate::handlers::{ApplicationError, User};
+use crate::{db::User, handlers::ApplicationError};
+
+pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, anyhow::Error> {
+    let user_id = Uuid::from_str(&user_id)?;
+    let user = sqlx::query_as!(User, "SELECT * FROM users WHERE user_id=$1", user_id)
+        .fetch_one(db_pool)
+        .await
+        .context(format!(
+            "Failed to fetch user with user_id {}",
+            user_id.to_string()
+        ))?;
+    Ok(user)
+}
 
 pub async fn validate_request_with_basic_auth(
     request: HttpRequest,
@@ -69,6 +84,8 @@ fn verify_password_hash(
     expected_password_hash: String,
     password_candidate: String,
 ) -> Result<(), ApplicationError> {
+    // return Ok(()); // For testing let's just accept every password
+
     let expected_password_hash = PasswordHash::new(&expected_password_hash)
         .context("Failed to parse hash in PHC string format.")
         .map_err(ApplicationError::UnexpectedError)?;
@@ -77,11 +94,6 @@ fn verify_password_hash(
         .verify_password(password_candidate.as_bytes(), &expected_password_hash)
         .context("Invalid password.")
         .map_err(ApplicationError::AuthError)
-}
-
-struct Credentials {
-    username: String,
-    password: String,
 }
 
 fn extract_from_headers(headers: &HeaderMap) -> Result<Credentials, anyhow::Error> {
@@ -109,4 +121,9 @@ fn extract_from_headers(headers: &HeaderMap) -> Result<Credentials, anyhow::Erro
         .to_string();
 
     Ok(Credentials { username, password })
+}
+
+struct Credentials {
+    username: String,
+    password: String,
 }
