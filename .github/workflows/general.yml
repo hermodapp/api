@@ -18,9 +18,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      # - uses: actions-rs/cargo@v1
-      #   with:
-      #     command: doc
+      - uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --manifest-path api/Cargo.toml
       # - name: Run documentation script
       #   run: |
       #     ./scripts/init_db.sh
