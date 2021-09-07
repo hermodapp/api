@@ -21,9 +21,9 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: doc
-      - name: Run documentation script
-        run: |
-          ./scripts/init_db.sh
+      # - name: Run documentation script
+      #   run: |
+      #     ./scripts/init_db.sh
       # - uses: actions-x/commit@v2
       #   with:
       #     name: Rust Docs Auto-Generator Bot
