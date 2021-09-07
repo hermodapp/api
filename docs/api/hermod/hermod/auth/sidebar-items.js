@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["AuthenticationError",""]],"fn":[["get_user_by_id","Fetches a user from the database with the given `user_id`."],["validate_request_with_basic_auth","Validates an HTTP request with request headers conforming to the Basic Auth RFC."]]});

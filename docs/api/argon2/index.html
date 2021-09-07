@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Pure Rust implementation of the Argon2 password hashing function."><meta name="keywords" content="rust, rustlang, rust-lang, argon2"><title>argon2 - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../ayu.css" disabled ><script id="default-settings" ></script><script src="../storage.js"></script><script src="../crates.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="shortcut icon" href="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;RustCrypto&#x2F;media&#x2F;8f1a9894&#x2F;logo.svg"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../argon2/index.html'><div class='logo-container rust-logo'><img src='https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;RustCrypto&#x2F;media&#x2F;8f1a9894&#x2F;logo.svg' alt='logo'></div></a><h2 class="location">Crate argon2</h2><div class="block version"><div class="narrow-helper"></div><p>Version 0.3.0</p></div><div class="sidebar-elems"><a id="all-types" href="all.html"><p>See all argon2's items</p></a><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#constants">Constants</a></li><li><a href="#traits">Traits</a></li><li><a href="#types">Type Definitions</a></li></ul></div><div id="sidebar-vars" data-name="argon2" data-ty="mod" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../wheel.svg"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">argon2</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../src/argon2/lib.rs.html#1-418" title="goto source code">[src]</a></span></h1><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Pure Rust implementation of the <a href="https://en.wikipedia.org/wiki/Argon2">Argon2</a> password hashing function.</p>
+<h1 id="about" class="section-header"><a href="#about">About</a></h1>
+<p>Argon2 is a memory-hard <a href="https://en.wikipedia.org/wiki/Key_derivation_function">key derivation function</a> chosen as the winner of
+the <a href="https://www.password-hashing.net/">Password Hashing Competition</a> in July 2015.</p>
+<p>It provides three algorithmic variants (chosen via the <a href="enum.Algorithm.html" title="Algorithm"><code>Algorithm</code></a> enum):</p>
+<ul>
+<li><strong>Argon2d</strong>: maximizes resistance to GPU cracking attacks</li>
+<li><strong>Argon2i</strong>: optimized to resist side-channel attacks</li>
+<li><strong>Argon2id</strong>: (default) hybrid version combining both Argon2i and Argon2d</li>
+</ul>
+<p>Support is provided for embedded (i.e. <code>no_std</code>) environments, including
+ones without <code>alloc</code> support.</p>
+<h1 id="usage-simple-with-default-params" class="section-header"><a href="#usage-simple-with-default-params">Usage (simple with default params)</a></h1>
+<p>Note: this example requires the <code>rand_core</code> crate with the <code>std</code> feature
+enabled for <code>rand_core::OsRng</code> (embedded platforms can substitute their
+own RNG)</p>
+<p>Add the following to your crate’s <code>Cargo.toml</code> to import it:</p>
+<div class="example-wrap"><pre class="language-toml"><code>[dependencies]
+argon2 = &quot;0.2&quot;
+rand_core = { version = &quot;0.6&quot;, features = [&quot;std&quot;] }</code></pre></div>
+<p>The following example demonstrates the high-level password hashing API:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">argon2</span>::{
+    <span class="ident">password_hash</span>::{
+        <span class="ident">rand_core::OsRng</span>,
+        <span class="ident">PasswordHash</span>, <span class="ident">PasswordHasher</span>, <span class="ident">PasswordVerifier</span>, <span class="ident">SaltString</span>
+    },
+    <span class="ident">Argon2</span>
+};
+
+<span class="kw">let</span> <span class="ident">password</span> <span class="op">=</span> <span class="string">b&quot;hunter42&quot;</span>; <span class="comment">// Bad password; don&#39;t actually use!</span>
+<span class="kw">let</span> <span class="ident">salt</span> <span class="op">=</span> <span class="ident">SaltString::generate</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">OsRng</span>);
+
+<span class="comment">// Argon2 with default params (Argon2id v19)</span>
+<span class="kw">let</span> <span class="ident">argon2</span> <span class="op">=</span> <span class="ident">Argon2::default</span>();
+
+<span class="comment">// Hash password to PHC string ($argon2id$v=19$...)</span>
+<span class="kw">let</span> <span class="ident">password_hash</span> <span class="op">=</span> <span class="ident">argon2</span>.<span class="ident">hash_password</span>(<span class="ident">password</span>, <span class="kw-2">&amp;</span><span class="ident">salt</span>)<span class="question-mark">?</span>.<span class="ident">to_string</span>();
+
+<span class="comment">// Verify password against PHC string</span>
+<span class="kw">let</span> <span class="ident">parsed_hash</span> <span class="op">=</span> <span class="ident">PasswordHash::new</span>(<span class="kw-2">&amp;</span><span class="ident">password_hash</span>)<span class="question-mark">?</span>;
+<span class="macro">assert!</span>(<span class="ident">argon2</span>.<span class="ident">verify_password</span>(<span class="ident">password</span>, <span class="kw-2">&amp;</span><span class="ident">parsed_hash</span>).<span class="ident">is_ok</span>());</code></pre></div>
+</div></details><h2 id="reexports" class="section-header"><a href="#reexports">Re-exports</a></h2>
+<div class="item-table"><div class="item-left import-item"><code>pub use <a class="mod" href="../password_hash/index.html" title="mod password_hash">password_hash</a>;</code></div><div class="item-right docblock-short"></div></div><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="struct" href="struct.Argon2.html" title="argon2::Argon2 struct">Argon2</a></div><div class="item-right docblock-short"><p>Argon2 context.</p>
+</div><div class="item-left module-item"><a class="struct" href="struct.Block.html" title="argon2::Block struct">Block</a></div><div class="item-right docblock-short"><p>Structure for the (1KB) memory block implemented as 128 64-bit words.</p>
+</div><div class="item-left module-item"><a class="struct" href="struct.Params.html" title="argon2::Params struct">Params</a></div><div class="item-right docblock-short"><p>Argon2 password hash parameters.</p>
+</div><div class="item-left module-item"><a class="struct" href="struct.ParamsBuilder.html" title="argon2::ParamsBuilder struct">ParamsBuilder</a></div><div class="item-right docblock-short"><p>Builder for Argon2 <a href="struct.Params.html" title="Params"><code>Params</code></a>.</p>
+</div><div class="item-left module-item"><a class="struct" href="struct.PasswordHash.html" title="argon2::PasswordHash struct">PasswordHash</a></div><div class="item-right docblock-short"><p>Password hash.</p>
+</div></div><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="enum" href="enum.Algorithm.html" title="argon2::Algorithm enum">Algorithm</a></div><div class="item-right docblock-short"><p>Argon2 primitive type: variants of the algorithm.</p>
+</div><div class="item-left module-item"><a class="enum" href="enum.Error.html" title="argon2::Error enum">Error</a></div><div class="item-right docblock-short"><p>Error type.</p>
+</div><div class="item-left module-item"><a class="enum" href="enum.Version.html" title="argon2::Version enum">Version</a></div><div class="item-right docblock-short"><p>Version of the algorithm.</p>
+</div></div><h2 id="constants" class="section-header"><a href="#constants">Constants</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="constant" href="constant.ARGON2D_IDENT.html" title="argon2::ARGON2D_IDENT constant">ARGON2D_IDENT</a></div><div class="item-right docblock-short"><p>Argon2d algorithm identifier</p>
+</div><div class="item-left module-item"><a class="constant" href="constant.ARGON2ID_IDENT.html" title="argon2::ARGON2ID_IDENT constant">ARGON2ID_IDENT</a></div><div class="item-right docblock-short"><p>Argon2id algorithm identifier</p>
+</div><div class="item-left module-item"><a class="constant" href="constant.ARGON2I_IDENT.html" title="argon2::ARGON2I_IDENT constant">ARGON2I_IDENT</a></div><div class="item-right docblock-short"><p>Argon2i algorithm identifier</p>
+</div><div class="item-left module-item"><a class="constant" href="constant.MAX_PWD_LEN.html" title="argon2::MAX_PWD_LEN constant">MAX_PWD_LEN</a></div><div class="item-right docblock-short"><p>Maximum password length in bytes.</p>
+</div><div class="item-left module-item"><a class="constant" href="constant.MAX_SALT_LEN.html" title="argon2::MAX_SALT_LEN constant">MAX_SALT_LEN</a></div><div class="item-right docblock-short"><p>Maximum salt length in bytes.</p>
+</div><div class="item-left module-item"><a class="constant" href="constant.MAX_SECRET_LEN.html" title="argon2::MAX_SECRET_LEN constant">MAX_SECRET_LEN</a></div><div class="item-right docblock-short"><p>Maximum secret key length in bytes.</p>
+</div><div class="item-left module-item"><a class="constant" href="constant.MIN_SALT_LEN.html" title="argon2::MIN_SALT_LEN constant">MIN_SALT_LEN</a></div><div class="item-right docblock-short"><p>Minimum and maximum salt length in bytes.</p>
+</div></div><h2 id="traits" class="section-header"><a href="#traits">Traits</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="trait" href="trait.PasswordHasher.html" title="argon2::PasswordHasher trait">PasswordHasher</a></div><div class="item-right docblock-short"><p>Trait for password hashing functions.</p>
+</div><div class="item-left module-item"><a class="trait" href="trait.PasswordVerifier.html" title="argon2::PasswordVerifier trait">PasswordVerifier</a></div><div class="item-right docblock-short"><p>Trait for password verification.</p>
+</div></div><h2 id="types" class="section-header"><a href="#types">Type Definitions</a></h2>
+<div class="item-table"><div class="item-left module-item"><a class="type" href="type.Result.html" title="argon2::Result type">Result</a></div><div class="item-right docblock-short"><p>Result with argon2’s <a href="enum.Error.html" title="Error"><code>Error</code></a> type.</p>
+</div></div></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../" data-current-crate="argon2" data-search-index-js="../search-index.js" data-search-js="../search.js"></div>
+    <script src="../main.js"></script>
+</body></html>

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["deserialize_struct_case_insensitive","Deserializes a struct without checking for the fields case sensititivity."]]});
