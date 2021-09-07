@@ -27,6 +27,10 @@ jobs:
       - name: Run documentation script
         run: |
           ./scripts/init_db.sh
+      - uses: actions-x/commit@v2
+        with:
+          name: Rust Docs Auto-Generator Bot
+
   test:
     name: Test
     runs-on: ubuntu-latest
