@@ -1,3 +1,4 @@
+//! A collection of methods used for user authentication and authorization
 use std::str::FromStr;
 
 use actix_web::http::HeaderMap;
@@ -9,6 +10,7 @@ use uuid::Uuid;
 
 use crate::{db::User, handlers::ApplicationError};
 
+/// Fetches a user from the database with the given `user_id`.
 pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, anyhow::Error> {
     let user_id = Uuid::from_str(&user_id)?;
     let user = sqlx::query_as!(User, "SELECT * FROM users WHERE user_id=$1", user_id)
@@ -21,6 +23,8 @@ pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, a
     Ok(user)
 }
 
+/// Validates an HTTP request with request headers
+/// conforming to the [Basic Auth RFC](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication).
 pub async fn validate_request_with_basic_auth(
     request: HttpRequest,
     pool: &PgPool,
@@ -84,8 +88,6 @@ fn verify_password_hash(
     expected_password_hash: String,
     password_candidate: String,
 ) -> Result<(), ApplicationError> {
-    // return Ok(()); // For testing let's just accept every password
-
     let expected_password_hash = PasswordHash::new(&expected_password_hash)
         .context("Failed to parse hash in PHC string format.")
         .map_err(ApplicationError::UnexpectedError)?;

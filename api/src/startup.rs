@@ -9,7 +9,7 @@ use std::net::TcpListener;
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::handlers::{health_check, hello, login, logout};
 
-pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
+fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
     let db_pool = Data::new(db_pool);
     let server = HttpServer::new(move || {
         App::new()

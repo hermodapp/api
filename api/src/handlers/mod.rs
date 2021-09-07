@@ -1,3 +1,4 @@
+//! Contains HTTP Handlers that directly receive and respond to requests to the server.
 mod auth;
 mod health_check;
 mod index;
