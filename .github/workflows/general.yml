@@ -18,6 +18,8 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_DB: postgres
+          SQLX_FEATURES: postgres
+          DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
         ports:
           - 5432:5432
     env:
@@ -64,7 +66,11 @@ jobs:
             --features=${{ env.SQLX_FEATURES }}
             --no-default-features
             --locked
-
+      - name: Migrate database
+        run: |
+          sudo apt-get install libpq-dev -y
+          cargo install --version=0.5.5 --locked sqlx-cli --no-default-features --features postgres
+          SKIP_DOCKER=true ./scripts/init_db.sh
       - uses: actions-rs/cargo@v1
         with:
           command: doc
@@ -97,10 +103,12 @@ jobs:
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
-      # cargo sqlx prepare -- --bin hermod
     env:
-      SQLX_VERSION: 0.5.5
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
       SQLX_FEATURES: postgres
+      DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -148,7 +156,7 @@ jobs:
           args: prepare -- --bin hermod --manifest-path api/Cargo.toml
       - uses: actions-x/commit@v2
         with:
-          name: Rust Docs Auto-Generator Bot
+          name: sqlx Bot
   # test:
   #   name: Test
   #   runs-on: ubuntu-latest
