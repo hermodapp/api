@@ -18,13 +18,13 @@ jobs:
           profile: default
           toolchain: stable
           override: true
-      # - uses: actions-rs/cargo@v1
-      #   with:
-      #     command: doc
-      #     args: --manifest-path api/Cargo.toml
+      - uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --manifest-path api/Cargo.toml
       - name: Run documentation script
         run: |
-          ./scripts/docs.sh
+          cp -r target/doc/hermod/* ../docs/api/hermod
       - uses: actions-x/commit@v2
         with:
           name: Rust Docs Auto-Generator Bot
