@@ -2,25 +2,20 @@ use actix_identity::Identity;
 use actix_web::web;
 use sqlx::PgPool;
 
-use crate::db::User;
+use crate::db::{NewUser, User};
 
+use super::ApplicationError;
+#[tracing::instrument(name = "handlers::hello", skip(pool, id))]
 /// Get(/) runs a sample SQL query and checks if the user is logged in
-pub async fn hello(pool: web::Data<PgPool>, id: Identity) -> String {
+pub async fn hello(pool: web::Data<PgPool>, id: Identity) -> Result<String, ApplicationError> {
     if let Some(id) = id.identity() {
         let current_user: User = serde_json::from_str(&id).unwrap();
-        current_user.username
+        Ok(format!("you are {}", current_user.username))
     } else {
-        let users = sqlx::query_as!(
-            User,
-            r#"
-            SELECT *
-            FROM users;
-            "#,
-        )
-        .fetch_all(pool.as_ref())
-        .await
-        .expect("Failed to execute query on database");
-
-        format!("{:?}", users)
+        let mut new_user = NewUser::default();
+        new_user.username = "russweas3".to_string();
+        new_user.password = "russweas".to_string();
+        new_user.store(&pool).await;
+        Ok("New user stored.".to_string())
     }
 }

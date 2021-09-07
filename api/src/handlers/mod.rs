@@ -11,7 +11,9 @@ pub use auth::*;
 pub use health_check::*;
 pub use index::*;
 
-fn error_chain_fmt(
+use crate::auth::AuthenticationError;
+
+pub(crate) fn error_chain_fmt(
     e: &impl std::error::Error,
     f: &mut std::fmt::Formatter<'_>,
 ) -> std::fmt::Result {
@@ -27,7 +29,7 @@ fn error_chain_fmt(
 #[derive(thiserror::Error)]
 pub enum ApplicationError {
     #[error("Authentication failed.")]
-    AuthError(#[source] anyhow::Error),
+    AuthError(#[source] AuthenticationError),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
 }
@@ -35,13 +37,17 @@ pub enum ApplicationError {
 impl ResponseError for ApplicationError {
     fn error_response(&self) -> HttpResponse {
         match self {
-            Self::UnexpectedError(_) => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
-            Self::AuthError(_) => {
+            Self::UnexpectedError(e) => {
+                tracing::error!("{:?}", e);
+                HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR)
+            }
+            Self::AuthError(e) => {
                 let mut response = HttpResponse::new(StatusCode::UNAUTHORIZED);
                 let header_value = HeaderValue::from_str(r#"Basic realm="publish""#).unwrap();
                 response
                     .headers_mut()
                     .insert(header::WWW_AUTHENTICATE, header_value);
+                tracing::error!("{:?}", e);
                 response
             }
         }

@@ -28,9 +28,9 @@ pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, a
 pub async fn validate_request_with_basic_auth(
     request: HttpRequest,
     pool: &PgPool,
-) -> Result<uuid::Uuid, ApplicationError> {
+) -> Result<uuid::Uuid, AuthenticationError> {
     let credentials =
-        extract_from_headers(request.headers()).map_err(ApplicationError::AuthError)?;
+        extract_from_headers(request.headers()).map_err(|_| AuthenticationError::InvalidHeaders)?;
     let user_id = validate_credentials(credentials, pool).await?;
     Ok(user_id)
 }
@@ -38,7 +38,7 @@ pub async fn validate_request_with_basic_auth(
 async fn validate_credentials(
     credentials: Credentials,
     pool: &PgPool,
-) -> Result<uuid::Uuid, ApplicationError> {
+) -> Result<uuid::Uuid, AuthenticationError> {
     let mut user_id = None;
     let mut expected_password_hash = "$argon2id$v=19$m=15000,t=2,p=1$\
         gZiV/M1gPc22ElAH/Jh1Hw$\
@@ -48,7 +48,7 @@ async fn validate_credentials(
     if let Some((stored_user_id, stored_password_hash)) =
         get_stored_credentials(&credentials.username, pool)
             .await
-            .map_err(ApplicationError::UnexpectedError)?
+            .map_err(|e| AuthenticationError::UnexpectedError(e))?
     {
         user_id = Some(stored_user_id);
         expected_password_hash = stored_password_hash;
@@ -59,9 +59,9 @@ async fn validate_credentials(
     })
     .await
     .context("Failed to spawn blocking task.")
-    .map_err(ApplicationError::UnexpectedError)??;
+    .map_err(|e| AuthenticationError::UnexpectedError(e))??;
 
-    user_id.ok_or_else(|| ApplicationError::AuthError(anyhow::anyhow!("Unknown username.")))
+    user_id.ok_or_else(|| AuthenticationError::InvalidCredentials)
 }
 
 async fn get_stored_credentials(
@@ -87,15 +87,15 @@ async fn get_stored_credentials(
 fn verify_password_hash(
     expected_password_hash: String,
     password_candidate: String,
-) -> Result<(), ApplicationError> {
+) -> Result<(), AuthenticationError> {
     let expected_password_hash = PasswordHash::new(&expected_password_hash)
         .context("Failed to parse hash in PHC string format.")
-        .map_err(ApplicationError::UnexpectedError)?;
+        .map_err(AuthenticationError::UnexpectedError)?;
 
     Argon2::default()
         .verify_password(password_candidate.as_bytes(), &expected_password_hash)
         .context("Invalid password.")
-        .map_err(ApplicationError::AuthError)
+        .map_err(|_| AuthenticationError::InvalidCredentials)
 }
 
 fn extract_from_headers(headers: &HeaderMap) -> Result<Credentials, anyhow::Error> {
@@ -128,4 +128,26 @@ fn extract_from_headers(headers: &HeaderMap) -> Result<Credentials, anyhow::Erro
 struct Credentials {
     username: String,
     password: String,
+}
+
+#[derive(thiserror::Error)]
+pub enum AuthenticationError {
+    #[error(transparent)]
+    UnexpectedError(#[from] anyhow::Error),
+    #[error("Invalid headers.")]
+    InvalidHeaders,
+    #[error("Invalid credentials.")]
+    InvalidCredentials,
+}
+
+impl std::fmt::Debug for AuthenticationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        crate::handlers::error_chain_fmt(self, f)
+    }
+}
+
+impl From<AuthenticationError> for ApplicationError {
+    fn from(e: AuthenticationError) -> Self {
+        Self::AuthError(e)
+    }
 }
