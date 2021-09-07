@@ -34,14 +34,3 @@ cargo run # Compiles and runs the Hermod project (aka cargo r)
 ```
 Additional commands useful for developing in the api project are located
 in the [api folder's README](./api)
-
-## Project Architecture
-- configurations contains three files - base.yaml, local.yaml, and production.yaml. Base.yaml contains default configuration shared between local and production, and local and production specify configuration settings that differ between the two environments.
-- migrations
-- scripts
-- src
-- tests
-- .env
-- Cargo.toml
-- Dockerfile
-- sqlx-data.json

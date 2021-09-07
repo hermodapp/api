@@ -1,8 +1,13 @@
 # Hermod api
 
-For instructions to run the project, look at the [repo-level README](../).
+For instructions to run the project, look at the [repo-level README](https://github.com/cs495wifly/hermod).
 
-```
+## Rust project documentation
+To view the project's auto-generated documentation, run `cargo doc --open` locally, or view 
+[the latest version online](https://cs495wifly.github.io/hermod/docs/hermod).
+
+## Useful commands
+```bash
 # Install optional Rust command-line utilities
 cargo install sqlx-cli # (Optionally) Install sqlx CLI
 cargo install bunyan # (Optionally) install Bunyan log formatter
@@ -23,3 +28,15 @@ cargo sqlx prepare -- --bin hermod # Rebuild sqlx's cache used for compile-time 
 docker build -t hermod_api . # Build the release image of the application (will take a *very* long time, Rust has infamously long release compilation times)
 docker run -p 8000:8000 hermod_api # Run the release image of the application
 ```
+
+
+## Project Architecture
+- configurations contains three files - base.yaml, local.yaml, and production.yaml. Base.yaml contains default configuration shared between local and production, and local and production specify configuration settings that differ between the two environments.
+- migrations
+- scripts
+- src
+- tests
+- .env
+- Cargo.toml
+- Dockerfile
+- sqlx-data.json
