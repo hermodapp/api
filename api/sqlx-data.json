@@ -1,5 +1,35 @@
 {
   "db": "PostgreSQL",
+  "278ae8e554e93c79b15af1d58e719aecf55df18f0482f8e7f3f3e2aa790ecb85": {
+    "query": "\n            SELECT *\n            FROM users;\n            ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "user_id",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "username",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "password",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": []
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
   "3bf08be10ef97b209337773e69d2c8121f0c56e6714297a696e1f2e2f705a109": {
     "query": "\n        SELECT *\n        FROM users\n        WHERE username = $1\n        ",
     "describe": {
@@ -32,8 +62,8 @@
       ]
     }
   },
-  "87cd015437b858742f48225f8f512139be13f82023b2297da05b38bb3de9b6aa": {
-    "query": "\n        SELECT *\n        FROM users;\n        ",
+  "f593aa1cbdba23466e32e06ffbd59144e044dfad3f355cdb385b6941d28580ea": {
+    "query": "SELECT * FROM users WHERE user_id=$1",
     "describe": {
       "columns": [
         {
@@ -53,7 +83,9 @@
         }
       ],
       "parameters": {
-        "Left": []
+        "Left": [
+          "Uuid"
+        ]
       },
       "nullable": [
         false,
