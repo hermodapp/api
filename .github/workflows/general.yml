@@ -11,8 +11,15 @@ jobs:
   update_docs:
     name: Update Docs
     runs-on: ubuntu-latest
-    env:
-      SQLX_OFFLINE: true
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -20,6 +27,11 @@ jobs:
           profile: default
           toolchain: stable
           override: true
+      - name: Migrate database
+        run: |
+          sudo apt-get install libpq-dev -y
+          cargo install --version=0.5.5 --locked sqlx-cli --no-default-features --features postgres
+          SKIP_DOCKER=true ./scripts/init_db.sh
       - uses: actions-rs/cargo@v1
         with:
           command: doc
