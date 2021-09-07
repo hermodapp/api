@@ -1,4 +1,4 @@
-//! A collection of methods used for user authentication and authorization
+//! Contains methods used for user authentication and authorization.
 use std::str::FromStr;
 
 use actix_web::http::HeaderMap;

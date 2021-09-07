@@ -15,6 +15,7 @@ Spec.yaml contains Digital Ocean Application specifications for our project's de
 - [Docker](https://www.docker.com/get-started)
 - [sqlx (optional)](https://lib.rs/crates/sqlx-cli)
 - [Bunyan (optional)](https://lib.rs/crates/bunyan)
+
 #### Installation Instructions for Mac/Linux
 ```bash
 cd api

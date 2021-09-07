@@ -5,6 +5,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use uuid::Uuid;
 
+/// Represents a user record in the database.
 #[derive(sqlx::FromRow, Serialize, Deserialize)]
 pub struct User {
     pub user_id: Uuid,

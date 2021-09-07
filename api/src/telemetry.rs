@@ -1,3 +1,4 @@
+//! Contains functions that configure and initialize tracing telemetry, as well as additional helpers.
 use actix_web::rt::task::JoinHandle;
 use tracing::subscriber::set_global_default;
 use tracing::Subscriber;
@@ -34,6 +35,7 @@ pub fn init_subscriber(subscriber: impl Subscriber + Sync + Send) {
     set_global_default(subscriber).expect("Failed to set subscriber");
 }
 
+/// Spawn a blocking function within the current tracing Span
 pub fn spawn_blocking_with_tracing<F, R>(f: F) -> JoinHandle<R>
 where
     F: FnOnce() -> R + Send + 'static,
