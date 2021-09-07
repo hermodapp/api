@@ -29,6 +29,7 @@ impl Debug for User {
     }
 }
 
+/// Struct used to create a new user in the database
 pub struct NewUser {
     user_id: Uuid,
     pub username: String,
@@ -36,6 +37,7 @@ pub struct NewUser {
 }
 
 impl NewUser {
+    /// Struct with unqiue defaults for each field
     pub fn default() -> Self {
         Self {
             user_id: Uuid::new_v4(),
@@ -44,6 +46,7 @@ impl NewUser {
         }
     }
 
+    /// Store this struct in the users table
     pub async fn store(&self, pool: &PgPool) {
         let salt = SaltString::generate(&mut rand::thread_rng());
         // Match production parameters

@@ -130,6 +130,7 @@ struct Credentials {
     password: String,
 }
 
+/// Error derived while handling an authentication request
 #[derive(thiserror::Error)]
 pub enum AuthenticationError {
     #[error(transparent)]
@@ -142,7 +143,7 @@ pub enum AuthenticationError {
 
 impl std::fmt::Debug for AuthenticationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::handlers::error_chain_fmt(self, f)
+        crate::error::error_chain_fmt(self, f)
     }
 }
 
