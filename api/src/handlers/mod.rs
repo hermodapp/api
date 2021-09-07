@@ -13,6 +13,8 @@ pub use index::*;
 
 use crate::auth::AuthenticationError;
 
+pub type ApplicationResponse = Result<HttpResponse, ApplicationError>;
+
 /// Error derived while handling an HTTP request
 #[derive(thiserror::Error)]
 pub enum ApplicationError {

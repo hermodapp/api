@@ -1,4 +1,3 @@
-use argon2::{password_hash::SaltString, Algorithm, Argon2, Params, PasswordHasher, Version};
 use hermod::{
     configuration::{get_configuration, DatabaseSettings},
     db::NewUser,
@@ -96,6 +95,7 @@ pub struct TestApp {
 }
 
 impl TestApp {
+    #[allow(dead_code)]
     pub async fn login(&self) -> anyhow::Result<()> {
         login(
             self,

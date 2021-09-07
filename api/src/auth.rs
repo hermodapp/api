@@ -48,7 +48,7 @@ async fn validate_credentials(
     if let Some((stored_user_id, stored_password_hash)) =
         get_stored_credentials(&credentials.username, pool)
             .await
-            .map_err(|e| AuthenticationError::UnexpectedError(e))?
+            .map_err(AuthenticationError::UnexpectedError)?
     {
         user_id = Some(stored_user_id);
         expected_password_hash = stored_password_hash;
@@ -59,9 +59,9 @@ async fn validate_credentials(
     })
     .await
     .context("Failed to spawn blocking task.")
-    .map_err(|e| AuthenticationError::UnexpectedError(e))??;
+    .map_err(AuthenticationError::UnexpectedError)??;
 
-    user_id.ok_or_else(|| AuthenticationError::InvalidCredentials)
+    user_id.ok_or(AuthenticationError::InvalidCredentials)
 }
 
 async fn get_stored_credentials(
