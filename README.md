@@ -24,12 +24,9 @@ cd api
 brew install rustup postgres # Install Rustup and psql command line tool 
 brew cask install docker # Install Docker
 
-# Set Rust version to nightly
-rustup default nightly 
-
 # Build and run application
 ./scripts/init_db.sh # Starts and migrates a Postgres database using Docker
-cargo run # Compiles and runs the Hermod project (aka cargo r)
+cargo +nightly run # Compiles and runs the Hermod project using an edge Rust build (aka cargo r)
 
 ```
 Additional commands useful for developing in the api project are located
