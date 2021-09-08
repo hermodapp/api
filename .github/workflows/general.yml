@@ -89,7 +89,7 @@ jobs:
           # Stage the file, commit and push
           git add ../docs/api/*
           git commit -m "Updated rustdocs"
-          git push origin head
+          git push origin ${GITHUB_REF##*/}
 
   update_sqlx_data:
     name: Update sqlx-data.json
@@ -151,7 +151,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: sqlx
-          args: prepare -- --bin hermod --manifest-path api/Cargo.toml
+          args: prepare --manifest-path api/Cargo.toml -- --bin hermod
       - uses: actions-x/commit@v2
         with:
           name: sqlx Bot
