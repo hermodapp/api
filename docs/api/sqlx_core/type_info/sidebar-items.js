@@ -1,1 +1,0 @@
-initSidebarItems({"trait":[["TypeInfo","Provides information about a SQL type for the database driver."]]});

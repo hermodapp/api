@@ -1,0 +1,134 @@
+{
+  "db": "PostgreSQL",
+  "03476b8ea41ff8f1328c6ff80a947f5e5b0db6d4b0d69b35d117456e37eea0eb": {
+    "query": "INSERT INTO account (id, username, password)\n            VALUES ($1, $2, $3)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "1873be894d87e6de0d87ee4915588c01bb3d13600db3193322ba577138a38e7c": {
+    "query": "\n            INSERT INTO qr_code (id, account_id, slug, generation_data)\n            VALUES ($1, $2, $3, $4)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "2af90b788c8a99c55f21800c521de11a23cf7fbd69cd3f691f93a3376edff4b0": {
+    "query": "SELECT * FROM account WHERE id=$1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "username",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "password",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "7c0cd8b17014ba712cae5f2b6f7e3947c188201459bf5eeb80464e656cea1c02": {
+    "query": "\n        SELECT *\n        FROM account\n        WHERE username = $1\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "username",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 2,
+          "name": "password",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "e5311706b339c7a7601d9714939a25c17052943736973ea8a3ed0418825cf159": {
+    "query": "SELECT * FROM qr_code WHERE slug=$1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "account_id",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 2,
+          "name": "slug",
+          "type_info": "Text"
+        },
+        {
+          "ordinal": 3,
+          "name": "generation_data",
+          "type_info": "Text"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  }
+}

@@ -1,1 +1,0 @@
-initSidebarItems({"trait":[["Row","Represents a single row from the database."]]});

@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["NewUser","Struct used to create a new user in the database"],["User","Represents a user record in the database."]]});
