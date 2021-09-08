@@ -80,10 +80,8 @@ jobs:
       - name: Copy documentation output
         run: |
           cp -r target/doc/hermod/* ../docs/api/hermod
-      - uses: quizlet/commit-changes@[ref]
-        with:
-          message: Automated commit
-          glob-patterns: ../docs/api/*
+      - name: push
+        uses: actions-x/commit@v2
 
   update_sqlx_data:
     name: Update sqlx-data.json
