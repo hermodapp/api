@@ -65,7 +65,6 @@ jobs:
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
-          cargo install --version=0.5.5 --locked sqlx-cli --no-default-features --features postgres
           SKIP_DOCKER=true ./scripts/init_db.sh
       - uses: actions-rs/cargo@v1
         with:
@@ -143,10 +142,8 @@ jobs:
       #     args: prepare -- --bin hermod --manifest-path api/Cargo.toml
       - name: cargo prepare
         run: |
+          cargo install --version=0.5.5 --locked sqlx-cli
           cargo sqlx prepare -- --bin hermod --manifest-path api/Cargo.toml
-      # - uses: actions-x/commit@v2
-      #   with:
-      #     name: sqlx Bot
   # test:
   #   name: Test
   #   runs-on: ubuntu-latest
