@@ -1,9 +1,12 @@
-name: Rust
+name: Merge Assist
 defaults:
   run:
     working-directory: api
-on: pull_request
 
+on:
+  push:
+    branches:
+      - master
 env:
   CARGO_TERM_COLOR: always
 
@@ -66,13 +69,6 @@ jobs:
         run: |
           sudo apt-get install libpq-dev -y
           SKIP_DOCKER=true ./scripts/init_db.sh
-      # - name: Cache docs
-      #   uses: actions/cache@v2
-      #   id: cache-docs
-      #   with:
-      #     path: |
-      #       api/target/doc
-      #     key: ${{ runner.os }}-cargo-docs
       - uses: actions-rs/cargo@v1
         with:
           command: doc
@@ -80,5 +76,66 @@ jobs:
       - name: Copy documentation output
         run: |
           cp -r target/doc/hermod/* ../docs/api/hermod
+      - name: push
+        uses: actions-x/commit@v2
+  update_sqlx_data:
+    name: Update sqlx-data.json
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+    env:
+      DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
+      SQLX_VERSION: 0.5.5
+      SQLX_FEATURES: all
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Cache dependencies
+        id: cache-dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            api/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Cache sqlx-cli
+        uses: actions/cache@v2
+        id: cache-sqlx
+        with:
+          path: |
+            ~/.cargo/bin/sqlx
+          key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
+
+      - name: Install sqlx-cli
+        uses: actions-rs/cargo@v1
+        if: steps.cache-sqlx.outputs.cache-hit == false
+        with:
+          command: install
+          args: >
+            sqlx-cli
+            --force
+            --version=${{ env.SQLX_VERSION }}
+            --locked
+      - name: Migrate database
+        run: |
+          sudo apt-get install libpq-dev -y
+          SKIP_DOCKER=true ./scripts/init_db.sh
+      - name: cargo prepare
+        run: |
+          cargo sqlx prepare -- --bin hermod --manifest-path Cargo.toml
       - name: push
         uses: actions-x/commit@v2

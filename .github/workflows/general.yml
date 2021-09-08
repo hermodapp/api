@@ -8,8 +8,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  update_sqlx_data:
-    name: Update sqlx-data.json
+  test:
+    name: Test
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -20,10 +20,68 @@ jobs:
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
-    env:
-      DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
-      SQLX_VERSION: 0.5.5
-      SQLX_FEATURES: all
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache dependencies
+        id: cache-dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            api/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - name: Install sqlx-cli
+        uses: actions-rs/cargo@v1
+        if: steps.cache-sqlx.outputs.cache-hit == false
+        with:
+          command: install
+          args: >
+            sqlx-cli
+            --force
+            --version=${{ env.SQLX_VERSION }}
+            --features=${{ env.SQLX_FEATURES }}
+            --no-default-features
+            --locked
+      - name: Migrate database
+        run: |
+          sudo apt-get install libpq-dev -y
+          SKIP_DOCKER=true ./scripts/init_db.sh
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --manifest-path api/Cargo.toml
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path api/Cargo.toml --all -- --check
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -49,7 +107,6 @@ jobs:
           path: |
             ~/.cargo/bin/sqlx
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
-
       - name: Install sqlx-cli
         uses: actions-rs/cargo@v1
         if: steps.cache-sqlx.outputs.cache-hit == false
@@ -59,114 +116,71 @@ jobs:
             sqlx-cli
             --force
             --version=${{ env.SQLX_VERSION }}
+            --features=${{ env.SQLX_FEATURES }}
+            --no-default-features
             --locked
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
           SKIP_DOCKER=true ./scripts/init_db.sh
-      # - uses: actions-rs/cargo@v1
-      #   with:
-      #     command: sqlx
-      #     args: prepare -- --bin hermod --manifest-path api/Cargo.toml
-      - name: cargo prepare
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --manifest-path api/Cargo.toml -- -D warnings
+  coverage:
+    name: Code coverage
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Cache dependencies
+        id: cache-dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            api/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Cache sqlx-cli
+        uses: actions/cache@v2
+        id: cache-sqlx
+        with:
+          path: |
+            ~/.cargo/bin/sqlx
+          key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
+      - name: Install sqlx-cli
+        uses: actions-rs/cargo@v1
+        if: steps.cache-sqlx.outputs.cache-hit == false
+        with:
+          command: install
+          args: >
+            sqlx-cli
+            --force
+            --version=${{ env.SQLX_VERSION }}
+            --features=${{ env.SQLX_FEATURES }}
+            --no-default-features
+            --locked
+      - name: Migrate database
         run: |
-          cargo sqlx prepare -- --bin hermod --manifest-path Cargo.toml
-  # test:
-  #   name: Test
-  #   runs-on: ubuntu-latest
-  #   services:
-  #     postgres:
-  #       image: postgres:12
-  #       env:
-  #         POSTGRES_USER: postgres
-  #         POSTGRES_PASSWORD: password
-  #         POSTGRES_DB: postgres
-  #       ports:
-  #         - 5432:5432
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: nightly
-  #         override: true
-  #     - name: Migrate database
-  #       run: |
-  #         sudo apt-get install libpq-dev -y
-  #         cargo install --version=0.5.5 --locked sqlx-cli --no-default-features --features postgres
-  #         SKIP_DOCKER=true ./scripts/init_db.sh
-  #     - uses: actions-rs/cargo@v1
-  #       with:
-  #         command: test
-  #         args: --manifest-path api/Cargo.toml
-  # fmt:
-  #   name: Rustfmt
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: nightly
-  #         override: true
-  #         components: rustfmt
-  #     - uses: actions-rs/cargo@v1
-  #       with:
-  #         command: fmt
-  #         args: --manifest-path api/Cargo.toml --all -- --check
-  # clippy:
-  #   name: Clippy
-  #   runs-on: ubuntu-latest
-  #   services:
-  #     postgres:
-  #       image: postgres:12
-  #       env:
-  #         POSTGRES_USER: postgres
-  #         POSTGRES_PASSWORD: password
-  #         POSTGRES_DB: postgres
-  #       ports:
-  #         - 5432:5432
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: nightly
-  #         override: true
-  #         components: clippy
-  #     - name: Migrate database
-  #       run: |
-  #         sudo apt-get install libpq-dev -y
-  #         cargo install --version=0.5.5 --locked sqlx-cli --no-default-features --features postgres
-  #         SKIP_DOCKER=true ./scripts/init_db.sh
-  #     - uses: actions-rs/clippy-check@v1
-  #       with:
-  #         token: ${{ secrets.GITHUB_TOKEN }}
-  #         args: --manifest-path api/Cargo.toml -- -D warnings
-  # coverage:
-  #   name: Code coverage
-  #   runs-on: ubuntu-latest
-  #   services:
-  #     postgres:
-  #       image: postgres:12
-  #       env:
-  #         POSTGRES_USER: postgres
-  #         POSTGRES_PASSWORD: password
-  #         POSTGRES_DB: postgres
-  #       ports:
-  #         - 5432:5432
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v2
-  #     - name: Install stable toolchain
-  #       uses: actions-rs/toolchain@v1
-  #       with:
-  #         toolchain: nightly
-  #         override: true
-  #     - name: Migrate database
-  #       run: |
-  #         sudo apt-get install libpq-dev -y
-  #         cargo install --version=0.5.5 --locked sqlx-cli --no-default-features --features postgres
-  #         SKIP_DOCKER=true ./scripts/init_db.sh
-  #     - name: Run cargo-tarpaulin
-  #       uses: actions-rs/tarpaulin@v0.1
-  #       with:
-  #         args: "--manifest-path api/Cargo.toml --ignore-tests --avoid-cfg-tarpaulin"
+          sudo apt-get install libpq-dev -y
+          SKIP_DOCKER=true ./scripts/init_db.sh
+      - name: Run cargo-tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          args: "--manifest-path api/Cargo.toml --ignore-tests --avoid-cfg-tarpaulin"
