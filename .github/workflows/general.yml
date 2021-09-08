@@ -56,7 +56,6 @@ jobs:
             sqlx-cli
             --force
             --version=${{ env.SQLX_VERSION }}
-            --no-default-features
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
@@ -129,7 +128,6 @@ jobs:
             sqlx-cli
             --force
             --version=${{ env.SQLX_VERSION }}
-            --no-default-features
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
@@ -188,7 +186,6 @@ jobs:
             sqlx-cli
             --force
             --version=${{ env.SQLX_VERSION }}
-            --no-default-features
       - name: Migrate database
         run: |
           sudo apt-get install libpq-dev -y
