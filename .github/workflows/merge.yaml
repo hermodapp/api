@@ -81,6 +81,7 @@ jobs:
         with:
           name: Doc Bot
           message: Automatically updated Rustdocs
+          files: docs/api
   update_sqlx_data:
     name: Update sqlx-data.json
     runs-on: ubuntu-latest
@@ -145,3 +146,4 @@ jobs:
         with:
           name: Sqlx Bot
           message: Automatically updated sqlx-data.json for offline compilation
+          files: api/sqlx-data.json
