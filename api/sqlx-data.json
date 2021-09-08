@@ -1,35 +1,5 @@
 {
   "db": "PostgreSQL",
-  "278ae8e554e93c79b15af1d58e719aecf55df18f0482f8e7f3f3e2aa790ecb85": {
-    "query": "\n            SELECT *\n            FROM users;\n            ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "user_id",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 1,
-          "name": "username",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "password",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "3bf08be10ef97b209337773e69d2c8121f0c56e6714297a696e1f2e2f705a109": {
     "query": "\n        SELECT *\n        FROM users\n        WHERE username = $1\n        ",
     "describe": {
@@ -60,6 +30,20 @@
         false,
         false
       ]
+    }
+  },
+  "59d80b4d20555c579574c13fea039a5479c21c1c3f98cbaecf7a54b6a82b9670": {
+    "query": "INSERT INTO users (user_id, username, password)\n            VALUES ($1, $2, $3)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Text",
+          "Text"
+        ]
+      },
+      "nullable": []
     }
   },
   "f593aa1cbdba23466e32e06ffbd59144e044dfad3f355cdb385b6941d28580ea": {
