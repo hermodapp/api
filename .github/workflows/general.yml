@@ -22,7 +22,7 @@ jobs:
           - 5432:5432
     env:
       DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
-      SQLX_VERSION: 0.5.5
+      SQLX_VERSION: 0.5.7
       SQLX_FEATURES: postgres
     steps:
       - uses: actions/checkout@v2
@@ -93,7 +93,7 @@ jobs:
           - 5432:5432
     env:
       DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
-      SQLX_VERSION: 0.5.5
+      SQLX_VERSION: 0.5.7
       SQLX_FEATURES: postgres
     steps:
       - name: Checkout repository
@@ -152,7 +152,7 @@ jobs:
           - 5432:5432
     env:
       DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
-      SQLX_VERSION: 0.5.5
+      SQLX_VERSION: 0.5.7
       SQLX_FEATURES: postgres
     steps:
       - name: Checkout repository
