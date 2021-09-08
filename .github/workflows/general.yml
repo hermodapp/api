@@ -137,10 +137,13 @@ jobs:
             --features=${{ env.SQLX_FEATURES }}
             --no-default-features
             --locked
-      - uses: actions-rs/cargo@v1
-        with:
-          command: sqlx
-          args: prepare -- --bin hermod --manifest-path api/Cargo.toml
+      # - uses: actions-rs/cargo@v1
+      #   with:
+      #     command: sqlx
+      #     args: prepare -- --bin hermod --manifest-path api/Cargo.toml
+      - name: cargo prepare
+        run: |
+          cargo sqlx prepare -- --bin hermod --manifest-path api/Cargo.toml
       # - uses: actions-x/commit@v2
       #   with:
       #     name: sqlx Bot
