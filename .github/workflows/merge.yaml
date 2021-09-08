@@ -78,6 +78,9 @@ jobs:
           cp -r target/doc/hermod/* ../docs/api/hermod
       - name: push
         uses: actions-x/commit@v2
+        with:
+          name: Doc Bot
+          message: Automatically updated Rustdocs
   update_sqlx_data:
     name: Update sqlx-data.json
     runs-on: ubuntu-latest
@@ -139,4 +142,5 @@ jobs:
       - name: push
         uses: actions-x/commit@v2
         with:
-          name: Rustdoc Bot
+          name: Sqlx Bot
+          message: Automatically updated sqlx-data.json for offline compilation
