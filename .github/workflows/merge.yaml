@@ -14,6 +14,8 @@ env:
 
 jobs:
   update_docs:
+    strategy:
+      max-parallel: 1
     name: Update Docs
     runs-on: ubuntu-latest
     services:
@@ -83,6 +85,8 @@ jobs:
           message: Automatically updated Rustdocs
           files: docs/api
   update_sqlx_data:
+    strategy:
+      max-parallel: 1
     name: Update sqlx-data.json
     runs-on: ubuntu-latest
     services:
