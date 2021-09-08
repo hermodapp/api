@@ -66,7 +66,7 @@ jobs:
       #     args: prepare -- --bin hermod --manifest-path api/Cargo.toml
       - name: cargo prepare
         run: |
-          cargo sqlx prepare -- --bin hermod --manifest-path api/Cargo.toml
+          cargo sqlx prepare -- --bin hermod --manifest-path Cargo.toml
   # test:
   #   name: Test
   #   runs-on: ubuntu-latest
