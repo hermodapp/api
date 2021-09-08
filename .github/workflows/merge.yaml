@@ -14,6 +14,8 @@ env:
 
 jobs:
   update_docs:
+    strategy:
+      max-parallel: 1
     name: Update Docs
     runs-on: ubuntu-latest
     services:
@@ -76,6 +78,7 @@ jobs:
       - name: Copy documentation output
         run: |
           cp -r target/doc/hermod/* ../docs/api/hermod
+          git pull
       - name: push
         uses: actions-x/commit@v2
         with:
@@ -83,6 +86,8 @@ jobs:
           message: Automatically updated Rustdocs
           files: docs/api
   update_sqlx_data:
+    strategy:
+      max-parallel: 1
     name: Update sqlx-data.json
     runs-on: ubuntu-latest
     services:
@@ -141,6 +146,7 @@ jobs:
       - name: cargo prepare
         run: |
           cargo sqlx prepare -- --bin hermod --manifest-path Cargo.toml
+          git pull
       - name: push
         uses: actions-x/commit@v2
         with:
