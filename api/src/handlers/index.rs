@@ -5,6 +5,7 @@ use sqlx::PgPool;
 use crate::db::{NewUser, User};
 
 use super::ApplicationResponse;
+
 #[tracing::instrument(name = "handlers::hello", skip(pool, id))]
 /// Get(/) runs a sample SQL query and checks if the user is logged in
 pub async fn hello(pool: web::Data<PgPool>, id: Identity) -> ApplicationResponse {
@@ -18,4 +19,14 @@ pub async fn hello(pool: web::Data<PgPool>, id: Identity) -> ApplicationResponse
         new_user.store(&pool).await;
         Ok(HttpResponse::Ok().body("New user stored.".to_string()))
     }
+}
+
+#[tracing::instrument(name = "handlers::test", skip(pool))]
+/// Get(/test) runs a sample SQL query and checks if the user is logged in
+pub async fn test(pool: web::Data<PgPool>) -> ApplicationResponse {
+    let all_users = sqlx::query_as!(User, "select * from users")
+        .fetch_all(pool.as_ref())
+        .await
+        .expect("Failed to contact db");
+    Ok(HttpResponse::Ok().body(format!("{:?}", all_users)))
 }
