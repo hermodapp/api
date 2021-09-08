@@ -2,10 +2,10 @@ name: Rust
 defaults:
   run:
     working-directory: api
-on: 
+on:
   pull_request:
     paths:
-        - api/*
+      - api/**
   push:
     branches:
       - main
