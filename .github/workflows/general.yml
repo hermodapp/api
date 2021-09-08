@@ -80,14 +80,10 @@ jobs:
       - name: Copy documentation output
         run: |
           cp -r target/doc/hermod/* ../docs/api/hermod
-
-      - name: commit
-        run: |
-          git config user.name "Rustdocs Bot"
-          git config user.email "<>"
-          git add ../docs/api/*
-          git commit -m "Updated rustdocs"
-          git push -f origin ${GITHUB_REF##*/}
+      - uses: quizlet/commit-changes@[ref]
+        with:
+          message: Automated commit
+          glob-patterns: ../docs/api/*
 
   update_sqlx_data:
     name: Update sqlx-data.json
