@@ -1,5 +1,6 @@
 application:
   host: 0.0.0.0
+  base_url: "http://hermod-lk26w.ondigitalocean.app"
 database:
   require_ssl: true
 email_client:
