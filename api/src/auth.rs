@@ -23,7 +23,7 @@ pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, a
     Ok(user)
 }
 
-/// Validates an HTTP request with request headers
+/// Validates a HTTP request with request headers
 /// conforming to the [Basic Auth RFC](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication).
 pub async fn validate_request_with_basic_auth(
     request: HttpRequest,
