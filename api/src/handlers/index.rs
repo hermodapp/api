@@ -22,9 +22,9 @@ pub async fn hello(pool: web::Data<PgPool>, id: Identity) -> ApplicationResponse
 }
 
 #[tracing::instrument(name = "handlers::test", skip(pool))]
-/// Get(/test2) runs a sample SQL query and checks if the user is logged in
-pub async fn test2(pool: web::Data<PgPool>) -> ApplicationResponse {
-    let all_users = sqlx::query_as!(User, r#"select * from users where username = 'russweas'"#)
+/// Get(/test_final) runs a sample SQL query and checks if the user is logged in
+pub async fn test_final(pool: web::Data<PgPool>) -> ApplicationResponse {
+    let all_users = sqlx::query_as!(User, r#"select * from users where username = 'nadia'"#)
         .fetch_all(pool.as_ref())
         .await
         .expect("Failed to contact db");
