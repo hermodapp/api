@@ -46,8 +46,8 @@
       "nullable": []
     }
   },
-  "9c4915699f3dbe9223da2f1ae22c57d9b84b4327f4035020479a7fdbd6c05557": {
-    "query": "select * from users where username = 'russweas'",
+  "8330d418a6ef1671db88b473f8648ab52b8b154af9df237afa9abcd7c98bd57a": {
+    "query": "select * from users where username = 'nadia'",
     "describe": {
       "columns": [
         {
