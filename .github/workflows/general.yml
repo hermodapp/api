@@ -81,13 +81,13 @@ jobs:
         run: |
           cp -r target/doc/hermod/* ../docs/api/hermod
 
-      # - name: commit
-      #   run: |
-      #     git config user.name "Rustdocs Bot"
-      #     git config user.email "<>"
-      #     git add ../docs/api/*
-      #     git commit -m "Updated rustdocs"
-      #     git push
+      - name: commit
+        run: |
+          git config user.name "Rustdocs Bot"
+          git config user.email "<>"
+          git add ../docs/api/*
+          git commit -m "Updated rustdocs"
+          git push
 
   update_sqlx_data:
     name: Update sqlx-data.json
@@ -140,8 +140,6 @@ jobs:
             sqlx-cli
             --force
             --version=${{ env.SQLX_VERSION }}
-            --features=${{ env.SQLX_FEATURES }}
-            --no-default-features
             --locked
       # - uses: actions-rs/cargo@v1
       #   with:
