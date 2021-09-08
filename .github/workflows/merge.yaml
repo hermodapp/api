@@ -78,6 +78,7 @@ jobs:
       - name: Copy documentation output
         run: |
           cp -r target/doc/hermod/* ../docs/api/hermod
+          git pull
       - name: push
         uses: actions-x/commit@v2
         with:
@@ -145,6 +146,7 @@ jobs:
       - name: cargo prepare
         run: |
           cargo sqlx prepare -- --bin hermod --manifest-path Cargo.toml
+          git pull
       - name: push
         uses: actions-x/commit@v2
         with:
