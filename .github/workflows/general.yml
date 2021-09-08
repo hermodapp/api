@@ -60,6 +60,10 @@ jobs:
             --force
             --version=${{ env.SQLX_VERSION }}
             --locked
+      - name: Migrate database
+        run: |
+          sudo apt-get install libpq-dev -y
+          SKIP_DOCKER=true ./scripts/init_db.sh
       # - uses: actions-rs/cargo@v1
       #   with:
       #     command: sqlx
