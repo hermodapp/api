@@ -46,36 +46,6 @@
       "nullable": []
     }
   },
-  "8330d418a6ef1671db88b473f8648ab52b8b154af9df237afa9abcd7c98bd57a": {
-    "query": "select * from users where username = 'nadia'",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "user_id",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 1,
-          "name": "username",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 2,
-          "name": "password",
-          "type_info": "Text"
-        }
-      ],
-      "parameters": {
-        "Left": []
-      },
-      "nullable": [
-        false,
-        false,
-        false
-      ]
-    }
-  },
   "f593aa1cbdba23466e32e06ffbd59144e044dfad3f355cdb385b6941d28580ea": {
     "query": "SELECT * FROM users WHERE user_id=$1",
     "describe": {
