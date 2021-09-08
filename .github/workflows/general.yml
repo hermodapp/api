@@ -28,7 +28,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
       - name: Cache dependencies
         id: cache-dependencies
         uses: actions/cache@v2
@@ -38,14 +37,12 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-
       - name: Cache sqlx-cli
         uses: actions/cache@v2
         id: cache-sqlx
@@ -53,7 +50,6 @@ jobs:
           path: |
             ~/.cargo/bin/sqlx
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
-
       - name: Install sqlx-cli
         uses: actions-rs/cargo@v1
         if: steps.cache-sqlx.outputs.cache-hit == false
@@ -79,17 +75,13 @@ jobs:
         run: |
           cp -r target/doc/hermod/* ../docs/api/hermod
 
-      - name: setup git config
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
-
-      - name: commit
-        run: |
-          # Stage the file, commit and push
-          git add ../docs/api/*
-          git commit -m "Updated rustdocs"
-          git push origin ${GITHUB_REF##*/}
+      # - name: commit
+      #   run: |
+      #     git config user.name "Rustdocs Bot"
+      #     git config user.email "<>"
+      #     git add ../docs/api/*
+      #     git commit -m "Updated rustdocs"
+      #     git push
 
   update_sqlx_data:
     name: Update sqlx-data.json
@@ -110,7 +102,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
       - name: Cache dependencies
         id: cache-dependencies
         uses: actions/cache@v2
@@ -120,14 +111,12 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-
       - name: Cache sqlx-cli
         uses: actions/cache@v2
         id: cache-sqlx
@@ -151,10 +140,10 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: sqlx
-          args: prepare --manifest-path api/Cargo.toml -- --bin hermod
-      - uses: actions-x/commit@v2
-        with:
-          name: sqlx Bot
+          args: prepare -- --bin hermod --manifest-path api/Cargo.toml
+      # - uses: actions-x/commit@v2
+      #   with:
+      #     name: sqlx Bot
   # test:
   #   name: Test
   #   runs-on: ubuntu-latest
