@@ -4,9 +4,13 @@ defaults:
     working-directory: api
 on: 
   pull_request:
+    paths:
+        - api/*
   push:
     branches:
       - main
+    paths:
+      - api/*
 
 env:
   CARGO_TERM_COLOR: always
