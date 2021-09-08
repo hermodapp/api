@@ -2,7 +2,11 @@ name: Rust
 defaults:
   run:
     working-directory: api
-on: pull_request
+on: 
+  pull_request:
+  push:
+    branches:
+      - main
 
 env:
   CARGO_TERM_COLOR: always
