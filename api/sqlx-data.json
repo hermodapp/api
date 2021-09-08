@@ -46,8 +46,8 @@
       "nullable": []
     }
   },
-  "c6b37fc8c7116e4a7c9e4671cdbecfa52e2121def2eec61d8ebed0fec2375314": {
-    "query": "select * from users",
+  "9c4915699f3dbe9223da2f1ae22c57d9b84b4327f4035020479a7fdbd6c05557": {
+    "query": "select * from users where username = 'russweas'",
     "describe": {
       "columns": [
         {
