@@ -35,7 +35,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            target
+            api/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -66,13 +66,13 @@ jobs:
         run: |
           sudo apt-get install libpq-dev -y
           SKIP_DOCKER=true ./scripts/init_db.sh
-      - name: Cache docs
-        uses: actions/cache@v2
-        id: cache-docs
-        with:
-          path: |
-            target/doc
-          key: ${{ runner.os }}-cargo-docs
+      # - name: Cache docs
+      #   uses: actions/cache@v2
+      #   id: cache-docs
+      #   with:
+      #     path: |
+      #       api/target/doc
+      #     key: ${{ runner.os }}-cargo-docs
       - uses: actions-rs/cargo@v1
         with:
           command: doc
@@ -115,7 +115,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            target
+            api/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
