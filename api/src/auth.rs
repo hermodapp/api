@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{db::User, handlers::ApplicationError};
 
-/// Fetches a user from the database with the given `user_id`.
+/// Returns a user from the database with the given `user_id`.
 pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, anyhow::Error> {
     let user_id = Uuid::from_str(&user_id)?;
     let user = sqlx::query_as!(User, "SELECT * FROM users WHERE user_id=$1", user_id)
