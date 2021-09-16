@@ -1,16 +1,9 @@
 name: Rust
-defaults:
-  run:
-    working-directory: api
 on:
   pull_request:
-    paths:
-      - api/**
   push:
     branches:
       - main
-    paths:
-      - api/*
 
 env:
   CARGO_TERM_COLOR: always
@@ -41,7 +34,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            api/target
+            ./target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-test
       - uses: actions-rs/toolchain@v1
         with:
@@ -72,7 +65,6 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --manifest-path api/Cargo.toml
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
@@ -86,7 +78,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --manifest-path api/Cargo.toml --all -- --check
+          args: --all -- --check
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
@@ -113,7 +105,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            api/target
+            ./target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-clippy
       - name: Install nightly toolchain
         uses: actions-rs/toolchain@v1
@@ -145,7 +137,7 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --manifest-path api/Cargo.toml -- -D warnings
+          args: -- -D warnings
   coverage:
     name: Code coverage
     runs-on: ubuntu-latest
@@ -172,7 +164,7 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            api/target
+            ./target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-coverage
       - name: Install nightly toolchain
         uses: actions-rs/toolchain@v1
@@ -204,4 +196,4 @@ jobs:
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
-          args: "--manifest-path api/Cargo.toml --skip-clean --ignore-tests --avoid-cfg-tarpaulin"
+          args: "--skip-clean --ignore-tests --avoid-cfg-tarpaulin"

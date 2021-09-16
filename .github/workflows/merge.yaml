@@ -1,151 +1,151 @@
-name: Merge Assist
-defaults:
-  run:
-    working-directory: api
+# name: Merge Assist
+# defaults:
+#   run:
+#     working-directory: api
 
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - api/**
-env:
-  CARGO_TERM_COLOR: always
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - api/**
+# env:
+#   CARGO_TERM_COLOR: always
 
-jobs:
-  update_docs:
-    name: Update Docs
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: postgres
-          SQLX_FEATURES: postgres
-          DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
-        ports:
-          - 5432:5432
-    env:
-      SQLX_VERSION: 0.5.7
-      SQLX_FEATURES: postgres
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Cache dependencies
-        id: cache-dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            api/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-doc
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - name: Cache sqlx-cli
-        uses: actions/cache@v2
-        id: cache-sqlx
-        with:
-          path: |
-            ~/.cargo/bin/sqlx
-          key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}-doc
-      - name: Install sqlx-cli
-        uses: actions-rs/cargo@v1
-        if: steps.cache-sqlx.outputs.cache-hit == false
-        with:
-          command: install
-          args: >
-            sqlx-cli
-            --force
-            --version=${{ env.SQLX_VERSION }}
-            --features=${{ env.SQLX_FEATURES }}
-      - name: Migrate database
-        run: |
-          sudo apt-get install libpq-dev -y
-          SKIP_DOCKER=true ./scripts/init_db.sh
-      - uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --manifest-path api/Cargo.toml
-      - name: Copy documentation output
-        run: |
-          cp -r target/doc/hermod/* ../docs/api/hermod
-          git pull
-      - name: push
-        uses: actions-x/commit@v2
-        with:
-          name: Doc Bot
-          message: Automatically updated Rustdocs
-          files: docs/api
-  update_sqlx_data:
-    name: Update sqlx-data.json
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: postgres
-        ports:
-          - 5432:5432
-    env:
-      DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
-      SQLX_VERSION: 0.5.7
-      SQLX_FEATURES: default
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Cache dependencies
-        id: cache-dependencies
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            api/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-sqlx
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-      - name: Cache sqlx-cli
-        uses: actions/cache@v2
-        id: cache-sqlx
-        with:
-          path: |
-            ~/.cargo/bin/sqlx
-            ~/.cargo/bin/cargo-sqlx
-          key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}-sqlx2
+# jobs:
+#   update_docs:
+#     name: Update Docs
+#     runs-on: ubuntu-latest
+#     services:
+#       postgres:
+#         image: postgres:12
+#         env:
+#           POSTGRES_USER: postgres
+#           POSTGRES_PASSWORD: password
+#           POSTGRES_DB: postgres
+#           SQLX_FEATURES: postgres
+#           DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
+#         ports:
+#           - 5432:5432
+#     env:
+#       SQLX_VERSION: 0.5.7
+#       SQLX_FEATURES: postgres
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v2
+#       - name: Cache dependencies
+#         id: cache-dependencies
+#         uses: actions/cache@v2
+#         with:
+#           path: |
+#             ~/.cargo/registry
+#             ~/.cargo/git
+#             api/target
+#           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-doc
+#       - name: Install nightly toolchain
+#         uses: actions-rs/toolchain@v1
+#         with:
+#           profile: minimal
+#           toolchain: nightly
+#           override: true
+#       - name: Cache sqlx-cli
+#         uses: actions/cache@v2
+#         id: cache-sqlx
+#         with:
+#           path: |
+#             ~/.cargo/bin/sqlx
+#           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}-doc
+#       - name: Install sqlx-cli
+#         uses: actions-rs/cargo@v1
+#         if: steps.cache-sqlx.outputs.cache-hit == false
+#         with:
+#           command: install
+#           args: >
+#             sqlx-cli
+#             --force
+#             --version=${{ env.SQLX_VERSION }}
+#             --features=${{ env.SQLX_FEATURES }}
+#       - name: Migrate database
+#         run: |
+#           sudo apt-get install libpq-dev -y
+#           SKIP_DOCKER=true ./scripts/init_db.sh
+#       - uses: actions-rs/cargo@v1
+#         with:
+#           command: doc
+#           args: --manifest-path api/Cargo.toml
+#       - name: Copy documentation output
+#         run: |
+#           cp -r target/doc/hermod/* ../docs/api/hermod
+#           git pull
+#       - name: push
+#         uses: actions-x/commit@v2
+#         with:
+#           name: Doc Bot
+#           message: Automatically updated Rustdocs
+#           files: docs/api
+#   update_sqlx_data:
+#     name: Update sqlx-data.json
+#     runs-on: ubuntu-latest
+#     services:
+#       postgres:
+#         image: postgres:12
+#         env:
+#           POSTGRES_USER: postgres
+#           POSTGRES_PASSWORD: password
+#           POSTGRES_DB: postgres
+#         ports:
+#           - 5432:5432
+#     env:
+#       DATABASE_URL: postgres://postgres:password@localhost:5432/hermod
+#       SQLX_VERSION: 0.5.7
+#       SQLX_FEATURES: default
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v2
+#       - name: Cache dependencies
+#         id: cache-dependencies
+#         uses: actions/cache@v2
+#         with:
+#           path: |
+#             ~/.cargo/registry
+#             ~/.cargo/git
+#             api/target
+#           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-sqlx
+#       - name: Install nightly toolchain
+#         uses: actions-rs/toolchain@v1
+#         with:
+#           profile: minimal
+#           toolchain: nightly
+#           override: true
+#       - name: Cache sqlx-cli
+#         uses: actions/cache@v2
+#         id: cache-sqlx
+#         with:
+#           path: |
+#             ~/.cargo/bin/sqlx
+#             ~/.cargo/bin/cargo-sqlx
+#           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}-sqlx2
 
-      - name: Install sqlx-cli
-        uses: actions-rs/cargo@v1
-        if: steps.cache-sqlx.outputs.cache-hit == false
-        with:
-          command: install
-          args: >
-            sqlx-cli
-            --force
-            --version=${{ env.SQLX_VERSION }}
-      - name: Migrate database
-        run: |
-          sudo apt-get install libpq-dev -y
-          SKIP_DOCKER=true ./scripts/init_db.sh
-      - name: cargo prepare
-        run: |
-          cargo sqlx prepare -- --bin hermod --manifest-path Cargo.toml
-          git pull
-      - name: push
-        uses: actions-x/commit@v2
-        with:
-          name: Sqlx Bot
-          message: Automatically updated sqlx-data.json for offline compilation
-          files: api/sqlx-data.json
+#       - name: Install sqlx-cli
+#         uses: actions-rs/cargo@v1
+#         if: steps.cache-sqlx.outputs.cache-hit == false
+#         with:
+#           command: install
+#           args: >
+#             sqlx-cli
+#             --force
+#             --version=${{ env.SQLX_VERSION }}
+#       - name: Migrate database
+#         run: |
+#           sudo apt-get install libpq-dev -y
+#           SKIP_DOCKER=true ./scripts/init_db.sh
+#       - name: cargo prepare
+#         run: |
+#           cargo sqlx prepare -- --bin hermod --manifest-path Cargo.toml
+#           git pull
+#       - name: push
+#         uses: actions-x/commit@v2
+#         with:
+#           name: Sqlx Bot
+#           message: Automatically updated sqlx-data.json for offline compilation
+#           files: api/sqlx-data.json
