@@ -2,6 +2,7 @@
 mod auth;
 mod health_check;
 mod index;
+mod qr_code;
 
 use actix_web::{
     http::{header, HeaderValue, StatusCode},
@@ -10,6 +11,7 @@ use actix_web::{
 pub use auth::*;
 pub use health_check::*;
 pub use index::*;
+pub use qr_code::*;
 
 use crate::auth::AuthenticationError;
 

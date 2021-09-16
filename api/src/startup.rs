@@ -8,7 +8,9 @@ use sqlx::PgPool;
 use std::net::TcpListener;
 
 use crate::configuration::{DatabaseSettings, Settings};
-use crate::handlers::{health_check, hello, login, logout};
+use crate::handlers::{
+    get_qr_code_data, health_check, hello, login, logout, register, store_qr_code,
+};
 
 /// Represents the server application.
 pub struct Application {
@@ -34,6 +36,10 @@ impl Application {
         //     configuration.email_client.authorization_token,
         //     timeout,
         // );
+        sqlx::migrate!("./migrations")
+            .run(&connection_pool)
+            .await
+            .expect("Failed to migrate the database");
 
         let address = format!(
             "{}:{}",
@@ -81,7 +87,10 @@ fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>
             ))
             .route("/login", web::get().to(login))
             .route("/logout", web::get().to(logout))
+            .route("/register", web::post().to(register))
             .route("/health_check", web::get().to(health_check))
+            .route("/qr_code", web::get().to(get_qr_code_data))
+            .route("/qr_code/store", web::get().to(store_qr_code))
             .route("/", web::get().to(hello))
             .app_data(db_pool.clone())
     })

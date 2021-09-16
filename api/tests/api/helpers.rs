@@ -59,7 +59,7 @@ pub async fn spawn_app() -> TestApp {
         test_user: NewUser::default(),
     };
 
-    test_app.test_user.store(&test_app.db_pool).await;
+    test_app.test_user.store(&test_app.db_pool).await.unwrap();
 
     test_app
 }
@@ -74,14 +74,13 @@ async fn configure_database(config: &DatabaseSettings) -> PgPool {
         .await
         .expect("Failed to create database.");
 
-    // Migrate database
     let connection_pool = PgPool::connect_with(config.with_db())
         .await
         .expect("Failed to connect to Postgres.");
-    sqlx::migrate!("./migrations")
-        .run(&connection_pool)
-        .await
-        .expect("Failed to migrate the database");
+    // sqlx::migrate!("./migrations")
+    //     .run(&connection_pool)
+    //     .await
+    //     .expect("Failed to migrate the database");
 
     connection_pool
 }

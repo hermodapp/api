@@ -13,9 +13,9 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 /// Represents a user record in the database.
-#[derive(sqlx::FromRow, Serialize, Deserialize)]
+#[derive(sqlx::FromRow, Serialize, Deserialize, Clone)]
 pub struct User {
-    pub user_id: Uuid,
+    pub id: Uuid,
     pub username: String,
     pub password: String,
 }
@@ -23,15 +23,15 @@ pub struct User {
 impl Debug for User {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("User")
-            .field("user_id", &self.user_id)
+            .field("user_id", &self.id)
             .field("username", &self.username)
             .finish()
     }
 }
 
-/// Struct used to create a new user in the database
+/// Struct used to create a new user in the database, password is hashed in `store()`
 pub struct NewUser {
-    user_id: Uuid,
+    id: Uuid,
     pub username: String,
     pub password: String,
 }
@@ -40,33 +40,32 @@ impl NewUser {
     /// Struct with unqiue defaults for each field
     pub fn default() -> Self {
         Self {
-            user_id: Uuid::new_v4(),
+            id: Uuid::new_v4(),
             username: Uuid::new_v4().to_string(),
             password: Uuid::new_v4().to_string(),
         }
     }
 
     /// Store this struct in the users table
-    pub async fn store(&self, pool: &PgPool) {
+    pub async fn store(&self, pool: &PgPool) -> Result<(), anyhow::Error> {
         let salt = SaltString::generate(&mut rand::thread_rng());
         // Match production parameters
         let password_hash = Argon2::new(
             Algorithm::Argon2id,
             Version::V0x13,
-            Params::new(15000, 2, 1, None).unwrap(),
+            Params::new(15000, 2, 1, None)?,
         )
-        .hash_password(self.password.as_bytes(), &salt)
-        .unwrap()
+        .hash_password(self.password.as_bytes(), &salt)?
         .to_string();
         sqlx::query!(
-            "INSERT INTO users (user_id, username, password)
+            "INSERT INTO account (id, username, password)
             VALUES ($1, $2, $3)",
-            self.user_id,
+            self.id,
             self.username,
             password_hash,
         )
         .execute(pool)
-        .await
-        .expect("Failed to store test user.");
+        .await?;
+        Ok(())
     }
 }

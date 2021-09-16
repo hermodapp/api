@@ -2,7 +2,7 @@ use actix_identity::Identity;
 use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 
-use crate::auth::{get_user_by_id, validate_request_with_basic_auth};
+use crate::{auth::validate_request_with_basic_auth, db::NewUser};
 
 use super::{ApplicationError, ApplicationResponse};
 
@@ -13,9 +13,8 @@ pub async fn login(
     pool: web::Data<PgPool>,
     id: Identity,
 ) -> ApplicationResponse {
-    let user_id = validate_request_with_basic_auth(request, &pool).await?;
-    let user = get_user_by_id(user_id.to_string(), &pool).await;
-    let s = serde_json::to_string(&user?)
+    let user = validate_request_with_basic_auth(request, &pool).await?;
+    let s = serde_json::to_string(&user)
         .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
     id.remember(s);
     Ok(HttpResponse::Ok().finish())
@@ -28,6 +27,19 @@ pub async fn logout(id: Identity) -> ApplicationResponse {
     Ok(HttpResponse::Ok().finish())
 }
 
-pub async fn register() -> ApplicationResponse {
-    Ok(HttpResponse::Ok().finish())
+#[derive(serde::Deserialize)]
+pub struct RegistrationRequest {
+    pub username: String,
+    pub password: String,
+}
+
+pub async fn register(
+    pool: web::Data<PgPool>,
+    query: web::Form<RegistrationRequest>,
+) -> ApplicationResponse {
+    let mut new_user = NewUser::default();
+    new_user.username = query.username.clone();
+    new_user.password = query.password.clone();
+    new_user.store(&pool).await?;
+    Ok(HttpResponse::Ok().body("New user stored.".to_string()))
 }

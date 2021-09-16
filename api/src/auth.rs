@@ -13,7 +13,7 @@ use crate::{db::User, handlers::ApplicationError};
 /// Returns a user from the database with the given `user_id`.
 pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, anyhow::Error> {
     let user_id = Uuid::from_str(&user_id)?;
-    let user = sqlx::query_as!(User, "SELECT * FROM users WHERE user_id=$1", user_id)
+    let user = sqlx::query_as!(User, "SELECT * FROM account WHERE id=$1", user_id)
         .fetch_one(db_pool)
         .await
         .context(format!(
@@ -28,29 +28,29 @@ pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, a
 pub async fn validate_request_with_basic_auth(
     request: HttpRequest,
     pool: &PgPool,
-) -> Result<uuid::Uuid, AuthenticationError> {
+) -> Result<User, AuthenticationError> {
     let credentials =
         extract_from_headers(request.headers()).map_err(|_| AuthenticationError::InvalidHeaders)?;
-    let user_id = validate_credentials(credentials, pool).await?;
-    Ok(user_id)
+    let user = validate_credentials(credentials, pool).await?;
+    Ok(user)
 }
 
 async fn validate_credentials(
     credentials: Credentials,
     pool: &PgPool,
-) -> Result<uuid::Uuid, AuthenticationError> {
-    let mut user_id = None;
+) -> Result<User, AuthenticationError> {
+    let mut user = None;
     let mut expected_password_hash = "$argon2id$v=19$m=15000,t=2,p=1$\
         gZiV/M1gPc22ElAH/Jh1Hw$\
         CWOrkoo7oJBQ/iyh7uJ0LO2aLEfrHwTWllSAxT0zRno"
         .to_string();
 
-    if let Some((stored_user_id, stored_password_hash)) =
+    if let Some((stored_user, stored_password_hash)) =
         get_stored_credentials(&credentials.username, pool)
             .await
             .map_err(AuthenticationError::UnexpectedError)?
     {
-        user_id = Some(stored_user_id);
+        user = Some(stored_user);
         expected_password_hash = stored_password_hash;
     }
 
@@ -61,18 +61,18 @@ async fn validate_credentials(
     .context("Failed to spawn blocking task.")
     .map_err(AuthenticationError::UnexpectedError)??;
 
-    user_id.ok_or(AuthenticationError::InvalidCredentials)
+    user.ok_or(AuthenticationError::InvalidCredentials)
 }
 
 async fn get_stored_credentials(
     username: &str,
     pool: &PgPool,
-) -> Result<Option<(uuid::Uuid, String)>, anyhow::Error> {
+) -> Result<Option<(User, String)>, anyhow::Error> {
     let row = sqlx::query_as!(
         User,
         r#"
         SELECT *
-        FROM users
+        FROM account
         WHERE username = $1
         "#,
         username,
@@ -80,7 +80,7 @@ async fn get_stored_credentials(
     .fetch_optional(pool)
     .await
     .context("Failed to performed a query to retrieve stored credentials.")?
-    .map(|row| (row.user_id, row.password));
+    .map(|row| (row.clone(), row.password));
     Ok(row)
 }
 
@@ -139,6 +139,8 @@ pub enum AuthenticationError {
     InvalidHeaders,
     #[error("Invalid credentials.")]
     InvalidCredentials,
+    #[error("Not logged in.")]
+    Unauthorized,
 }
 
 impl std::fmt::Debug for AuthenticationError {
