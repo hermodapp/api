@@ -31,7 +31,7 @@ impl Debug for User {
 
 /// Struct used to create a new user in the database, password is hashed in `store()`
 pub struct NewUser {
-    id: Uuid,
+    pub id: Uuid,
     pub username: String,
     pub password: String,
 }

@@ -24,6 +24,8 @@ pub enum ApplicationError {
     AuthError(#[source] AuthenticationError),
     #[error(transparent)]
     UnexpectedError(#[from] anyhow::Error),
+    #[error("Not Found")]
+    NotFoundError(String),
 }
 
 impl ResponseError for ApplicationError {
@@ -41,6 +43,10 @@ impl ResponseError for ApplicationError {
                     .insert(header::WWW_AUTHENTICATE, header_value);
                 tracing::error!("{:?}", e);
                 response
+            }
+            Self::NotFoundError(message) => {
+                tracing::error!("404 Not Found: {}", message);
+                HttpResponse::new(StatusCode::NOT_FOUND)
             }
         }
     }

@@ -26,7 +26,7 @@ pub async fn get_qr_code_data(
     {
         Ok(HttpResponse::Ok().body(qr_code.generation_data))
     } else {
-        Err(ApplicationError::UnexpectedError(anyhow::anyhow!(
+        Err(ApplicationError::NotFoundError(format!(
             "No QR code found with slug {}",
             &query.slug
         )))
