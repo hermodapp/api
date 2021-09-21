@@ -40,7 +40,7 @@ pub struct NewQrCodeRequest {
 }
 
 #[tracing::instrument(name = "qr_code::store", skip(pool, id, query))]
-/// get(store_qr_code?generation_data={DATA}&slug={SLUG}) stores a QR code with the relevant information
+/// get(/qr_code/store?generation_data={DATA}&slug={SLUG}) stores a QR code with the relevant information
 pub async fn store_qr_code(
     pool: web::Data<PgPool>,
     id: Identity,
