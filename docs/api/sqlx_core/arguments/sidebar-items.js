@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["ImmutableArguments","used by the query macros to prevent supernumerary `.bind()` calls"]],"trait":[["Arguments","A tuple of arguments to be sent to the database."],["IntoArguments",""]]});

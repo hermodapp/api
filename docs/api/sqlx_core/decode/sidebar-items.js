@@ -1,1 +1,0 @@
-initSidebarItems({"trait":[["Decode","A type that can be decoded from the database."]]});
