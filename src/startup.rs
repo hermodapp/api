@@ -71,7 +71,7 @@ impl Application {
 /// Given a configuration, returns a pool of Postgres database connections.
 pub async fn get_connection_pool(configuration: &DatabaseSettings) -> Result<PgPool, sqlx::Error> {
     PgPoolOptions::new()
-        .connect_timeout(std::time::Duration::from_secs(2))
+        .connect_timeout(std::time::Duration::from_secs(30 * 3600))
         .connect_with(configuration.with_db())
         .await
 }
