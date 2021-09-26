@@ -21,9 +21,9 @@ pub struct Application {
 impl Application {
     /// Given a configuration, build application dependencies and return a configured application.
     pub async fn build(configuration: Settings) -> Result<Self, std::io::Error> {
-        let connection_pool = get_connection_pool(&configuration.database)
-            .await
-            .expect("Failed to connect to Postgres.");
+        // let connection_pool = get_connection_pool(&configuration.database)
+        //     .await
+        //     .expect("Failed to connect to Postgres.");
 
         // let sender_email = configuration
         //     .email_client
@@ -49,7 +49,7 @@ impl Application {
         let port = listener.local_addr().unwrap().port();
         let server = run(
             listener,
-            connection_pool,
+            // connection_pool,
             // email_client,
             // configuration.application.base_url,
         )?;
@@ -76,8 +76,11 @@ pub async fn get_connection_pool(configuration: &DatabaseSettings) -> Result<PgP
         .await
 }
 
-fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
-    let db_pool = Data::new(db_pool);
+fn run(
+    listener: TcpListener,
+    // db_pool: PgPool
+) -> Result<Server, std::io::Error> {
+    // let db_pool = Data::new(db_pool);
     let server = HttpServer::new(move || {
         App::new()
             .wrap(IdentityService::new(
@@ -85,14 +88,14 @@ fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>
                     .name("auth-cookie")
                     .secure(false),
             ))
-            .route("/login", web::get().to(login))
-            .route("/logout", web::get().to(logout))
-            .route("/register", web::post().to(register))
+            // .route("/login", web::get().to(login))
+            // .route("/logout", web::get().to(logout))
+            // .route("/register", web::post().to(register))
             .route("/health_check", web::get().to(health_check))
-            .route("/qr_code", web::get().to(get_qr_code_data))
-            .route("/qr_code/store", web::get().to(store_qr_code))
+            // .route("/qr_code", web::get().to(get_qr_code_data))
+            // .route("/qr_code/store", web::get().to(store_qr_code))
             .route("/", web::get().to(hello))
-            .app_data(db_pool.clone())
+        // .app_data(db_pool.clone())
     })
     .listen(listener)?
     .run();
