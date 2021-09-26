@@ -1,15 +1,22 @@
-# Builder stage
-FROM rust:1.54.0 AS builder
+FROM lukemathwalker/cargo-chef:latest-rust-1.55.0 as chef
 WORKDIR /app
+
+FROM chef as planner
+COPY . .
+# Compute a lock-like file for our project
+RUN cargo chef prepare  --recipe-path recipe.json
+
+FROM chef as builder
+COPY --from=planner /app/recipe.json recipe.json
+# Build our project dependencies, not our application!
+RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 ENV SQLX_OFFLINE true
-RUN cargo build --release
-ENTRYPOINT ["/app/target/release/hermod"]
+# Build our project
+RUN cargo build --release --bin hermod
 
-# Runtime stage
 FROM debian:buster-slim AS runtime
 WORKDIR /app
-# Install OpenSSL - it is dynamically linked by some of our dependencies
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends openssl \
     # Clean up
