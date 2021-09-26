@@ -41,5 +41,6 @@ pub async fn register(
     new_user.username = query.username.clone();
     new_user.password = query.password.clone();
     new_user.store(&pool).await?;
+
     Ok(HttpResponse::Ok().body("New user stored.".to_string()))
 }
