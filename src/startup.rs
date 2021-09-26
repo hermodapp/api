@@ -36,10 +36,10 @@ impl Application {
         //     configuration.email_client.authorization_token,
         //     timeout,
         // );
-        sqlx::migrate!("./migrations")
-            .run(&connection_pool)
-            .await
-            .expect("Failed to migrate the database");
+        // sqlx::migrate!("./migrations")
+        //     .run(&connection_pool)
+        //     .await
+        //     .expect("Failed to migrate the database");
 
         let address = format!(
             "{}:{}",
