@@ -77,7 +77,7 @@ pub async fn get_connection_pool(configuration: &DatabaseSettings) -> Result<PgP
 
     PgPoolOptions::new()
         .connect_timeout(std::time::Duration::from_secs(2))
-        .connect_with(configuration.with_db())
+        .connect_with(db_connect_options)
         .await
 }
 
