@@ -1,15 +1,17 @@
 //! Contains code neccessary to bootstrap the application and run the server.
+use actix_cors::Cors;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::dev::Server;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
 use sqlx::postgres::PgPoolOptions;
-use sqlx::PgPool;
+use sqlx::{ConnectOptions, PgPool};
 use std::net::TcpListener;
+use tracing::log::LevelFilter;
 
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::handlers::{
-    get_qr_code_data, health_check, hello, login, logout, register, store_qr_code,
+    get_qr_code_data, health_check, list_qr_codes, login, logout, register, store_qr_code,
 };
 
 /// Represents the server application.
@@ -25,17 +27,6 @@ impl Application {
             .await
             .expect("Failed to connect to Postgres.");
 
-        // let sender_email = configuration
-        //     .email_client
-        //     .sender()
-        //     .expect("Invalid sender email address.");
-        // let timeout = configuration.email_client.timeout();
-        // let email_client = EmailClient::new(
-        //     configuration.email_client.base_url,
-        //     sender_email,
-        //     configuration.email_client.authorization_token,
-        //     timeout,
-        // );
         sqlx::migrate!("./migrations")
             .run(&connection_pool)
             .await
@@ -47,12 +38,7 @@ impl Application {
         );
         let listener = TcpListener::bind(&address)?;
         let port = listener.local_addr().unwrap().port();
-        let server = run(
-            listener,
-            connection_pool,
-            // email_client,
-            // configuration.application.base_url,
-        )?;
+        let server = run(listener, connection_pool)?;
 
         Ok(Self { port, server })
     }
@@ -70,16 +56,29 @@ impl Application {
 
 /// Given a configuration, returns a pool of Postgres database connections.
 pub async fn get_connection_pool(configuration: &DatabaseSettings) -> Result<PgPool, sqlx::Error> {
+    let db_connect_options = configuration
+        .with_db()
+        .log_statements(LevelFilter::Trace)
+        .to_owned();
+
     PgPoolOptions::new()
         .connect_timeout(std::time::Duration::from_secs(2))
-        .connect_with(configuration.with_db())
+        .connect_with(db_connect_options)
         .await
 }
 
 fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
     let db_pool = Data::new(db_pool);
     let server = HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".hermodapp.com"))
+            .allowed_origin("http://localhost:3000")
+            .allowed_methods(vec!["GET", "POST"])
+            .supports_credentials()
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&[0; 32])
                     .name("auth-cookie")
@@ -90,8 +89,8 @@ fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>
             .route("/register", web::post().to(register))
             .route("/health_check", web::get().to(health_check))
             .route("/qr_code", web::get().to(get_qr_code_data))
+            .route("/qr_codes", web::get().to(list_qr_codes))
             .route("/qr_code/store", web::get().to(store_qr_code))
-            .route("/", web::get().to(hello))
             .app_data(db_pool.clone())
     })
     .listen(listener)?

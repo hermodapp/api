@@ -68,3 +68,26 @@ pub async fn store_qr_code(
         ))
     }
 }
+
+#[tracing::instrument(name = "qr_code::list", skip(pool, id))]
+/// get(/qr_codes) lists QR codes assosciated with a given user
+pub async fn list_qr_codes(pool: web::Data<PgPool>, id: Identity) -> ApplicationResponse {
+    if let Some(id) = id.identity() {
+        let current_user: User = serde_json::from_str(&id).unwrap();
+
+        let qr_codes = sqlx::query!(
+            r#"
+            SELECT * FROM qr_code
+            WHERE account_id=$1"#,
+            current_user.id,
+        )
+        .fetch_all(pool.as_ref())
+        .await
+        .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
+        Ok(HttpResponse::Ok().body(format!("{:?}", qr_codes)))
+    } else {
+        Err(ApplicationError::AuthError(
+            AuthenticationError::Unauthorized,
+        ))
+    }
+}
