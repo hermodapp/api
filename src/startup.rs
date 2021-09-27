@@ -22,10 +22,9 @@ pub struct Application {
 impl Application {
     /// Given a configuration, build application dependencies and return a configured application.
     pub async fn build(configuration: Settings) -> Result<Self, std::io::Error> {
-        // Create a database connection for the web server.
         let connection_pool = get_connection_pool(&configuration.database)
             .await
-            .expect("Failed to connect to Postgres");
+            .expect("Failed to connect to Postgres.");
         // let sender_email = configuration
         //     .email_client
         //     .sender()
@@ -76,10 +75,10 @@ pub async fn get_connection_pool(configuration: &DatabaseSettings) -> Result<PgP
         .log_statements(LevelFilter::Trace)
         .to_owned();
 
-    Ok(PgPoolOptions::new()
+    PgPoolOptions::new()
         .connect_timeout(std::time::Duration::from_secs(2))
-        .connect_with(db_connect_options)
-        .await?)
+        .connect_with(configuration.with_db())
+        .await
 }
 
 fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
