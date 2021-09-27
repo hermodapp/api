@@ -9,9 +9,7 @@ use std::net::TcpListener;
 use tracing::log::LevelFilter;
 
 use crate::configuration::{DatabaseSettings, Settings};
-use crate::handlers::{
-    get_qr_code_data, health_check, hello, login, logout, register, store_qr_code,
-};
+use crate::handlers::{get_qr_code_data, health_check, login, logout, register, store_qr_code};
 
 /// Represents the server application.
 pub struct Application {
@@ -25,17 +23,7 @@ impl Application {
         let connection_pool = get_connection_pool(&configuration.database)
             .await
             .expect("Failed to connect to Postgres.");
-        // let sender_email = configuration
-        //     .email_client
-        //     .sender()
-        //     .expect("Invalid sender email address.");
-        // let timeout = configuration.email_client.timeout();
-        // let email_client = EmailClient::new(
-        //     configuration.email_client.base_url,
-        //     sender_email,
-        //     configuration.email_client.authorization_token,
-        //     timeout,
-        // );
+
         sqlx::migrate!("./migrations")
             .run(&connection_pool)
             .await
@@ -47,12 +35,7 @@ impl Application {
         );
         let listener = TcpListener::bind(&address)?;
         let port = listener.local_addr().unwrap().port();
-        let server = run(
-            listener,
-            connection_pool,
-            // email_client,
-            // configuration.application.base_url,
-        )?;
+        let server = run(listener, connection_pool)?;
 
         Ok(Self { port, server })
     }
@@ -96,7 +79,6 @@ fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>
             .route("/health_check", web::get().to(health_check))
             .route("/qr_code", web::get().to(get_qr_code_data))
             .route("/qr_code/store", web::get().to(store_qr_code))
-            .route("/", web::get().to(hello))
             .app_data(db_pool.clone())
     })
     .listen(listener)?
