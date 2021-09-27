@@ -6,7 +6,6 @@ use argon2::Argon2;
 use argon2::Params;
 use argon2::PasswordHasher;
 use argon2::Version;
-// use chrono::NaiveDateTime;
 use serde::Deserialize;
 use serde::Serialize;
 use sqlx::PgPool;

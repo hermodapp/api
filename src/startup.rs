@@ -1,4 +1,5 @@
 //! Contains code neccessary to bootstrap the application and run the server.
+use actix_cors::Cors;
 use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::dev::Server;
 use actix_web::web::Data;
@@ -9,7 +10,9 @@ use std::net::TcpListener;
 use tracing::log::LevelFilter;
 
 use crate::configuration::{DatabaseSettings, Settings};
-use crate::handlers::{get_qr_code_data, health_check, login, logout, register, store_qr_code};
+use crate::handlers::{
+    get_qr_code_data, health_check, list_qr_codes, login, logout, register, store_qr_code,
+};
 
 /// Represents the server application.
 pub struct Application {
@@ -67,7 +70,15 @@ pub async fn get_connection_pool(configuration: &DatabaseSettings) -> Result<PgP
 fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
     let db_pool = Data::new(db_pool);
     let server = HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".hermodapp.com"))
+            .allowed_origin("http://localhost:3000")
+            .allowed_methods(vec!["GET", "POST"])
+            .supports_credentials()
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(&[0; 32])
                     .name("auth-cookie")
@@ -78,6 +89,7 @@ fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>
             .route("/register", web::post().to(register))
             .route("/health_check", web::get().to(health_check))
             .route("/qr_code", web::get().to(get_qr_code_data))
+            .route("/qr_codes", web::get().to(list_qr_codes))
             .route("/qr_code/store", web::get().to(store_qr_code))
             .app_data(db_pool.clone())
     })

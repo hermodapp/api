@@ -8,7 +8,6 @@ use std::convert::{TryFrom, TryInto};
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
-    // pub email_client: EmailClientSettings,
 }
 
 /// Contains settings relevant at the application level.
