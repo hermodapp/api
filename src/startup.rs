@@ -71,7 +71,7 @@ fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>
     let db_pool = Data::new(db_pool);
     let server = HttpServer::new(move || {
         let cors = Cors::default()
-            .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b".hermodapp.com"))
+            .allowed_origin_fn(|origin, _req_head| origin.as_bytes().ends_with(b"hermodapp.com"))
             .allowed_origin("http://localhost:3000")
             .allowed_methods(vec!["GET", "POST"])
             .supports_credentials()
