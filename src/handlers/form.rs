@@ -108,21 +108,30 @@ pub async fn store_form(
         new_form.account_id = current_user.id;
         new_form.store(pool.as_ref()).await?;
 
-        // Store all the fields
+        // Create a transaction to store each form input
+        let mut tx = pool
+            .begin()
+            .await
+            .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
+
+        // Queue a SQL query for each form input
         for field in request.fields.iter() {
             sqlx::query!(
-                r#"
-                    INSERT INTO form_input (id, form_id, type)
-                    VALUES ($1, $2, $3)
-                "#,
+                r#"INSERT INTO form_input (id, form_id, type) 
+                VALUES ($1, $2, $3)"#,
                 Uuid::new_v4(),
                 new_form.id,
                 field
             )
-            .execute(pool.as_ref())
+            .execute(&mut tx)
             .await
             .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
         }
+
+        // Commit the transaction
+        tx.commit()
+            .await
+            .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
 
         Ok(HttpResponse::Ok().body(format!("Stored new form with id {}.", new_form.id)))
     } else {
