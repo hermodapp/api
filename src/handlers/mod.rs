@@ -1,7 +1,6 @@
 //! Contains HTTP Handlers that directly receive and respond to requests to the server.
 mod auth;
 mod health_check;
-mod index;
 mod qr_code;
 mod form;
 
@@ -11,7 +10,6 @@ use actix_web::{
 };
 pub use auth::*;
 pub use health_check::*;
-pub use index::*;
 pub use qr_code::*;
 pub use form::*;
 
