@@ -4,7 +4,7 @@ use sqlx::PgPool;
 
 use crate::{auth::validate_request_with_basic_auth, db::NewUser};
 
-use super::{ApplicationError, ApplicationResponse};
+use super::ApplicationResponse;
 
 #[tracing::instrument(name = "handlers::login", skip(request, pool, id))]
 /// Get(/login) attempts to log a user in, and if successful stores the user in a session variable
@@ -14,8 +14,7 @@ pub async fn login(
     id: Identity,
 ) -> ApplicationResponse {
     let user = validate_request_with_basic_auth(request, &pool).await?;
-    let s = serde_json::to_string(&user)
-        .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
+    let s = serde_json::to_string(&user)?;
     id.remember(s);
     Ok(HttpResponse::Ok().finish())
 }

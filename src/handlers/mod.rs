@@ -57,3 +57,15 @@ impl std::fmt::Debug for ApplicationError {
         crate::error::error_chain_fmt(self, f)
     }
 }
+
+impl From<sqlx::Error> for ApplicationError {
+    fn from(e: sqlx::Error) -> Self {
+        Self::UnexpectedError(anyhow::anyhow!(e))
+    }
+}
+
+impl From<serde_json::Error> for ApplicationError {
+    fn from(e: serde_json::Error) -> Self {
+        Self::UnexpectedError(anyhow::anyhow!(e))
+    }
+}

@@ -21,8 +21,7 @@ pub async fn get_qr_code_data(
 ) -> ApplicationResponse {
     if let Some(qr_code) = sqlx::query!("SELECT * FROM qr_code WHERE slug=$1", &query.slug)
         .fetch_optional(pool.as_ref())
-        .await
-        .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?
+        .await?
     {
         Ok(HttpResponse::Ok().body(qr_code.generation_data))
     } else {
@@ -46,27 +45,25 @@ pub async fn store_qr_code(
     id: Identity,
     query: web::Query<NewQrCodeRequest>,
 ) -> ApplicationResponse {
-    if let Some(id) = id.identity() {
-        let current_user: User = serde_json::from_str(&id).unwrap();
+    if id.identity().is_none() {
+        return Err(ApplicationError::AuthError(
+            AuthenticationError::Unauthorized,
+        ));
+    }
+    let current_user: User = serde_json::from_str(&id.identity().unwrap()).unwrap();
 
-        sqlx::query!(
-            r#"
+    sqlx::query!(
+        r#"
             INSERT INTO qr_code (id, account_id, slug, generation_data)
             VALUES ($1, $2, $3, $4)"#,
-            Uuid::new_v4(),
-            current_user.id,
-            query.slug,
-            query.generation_data
-        )
-        .execute(pool.as_ref())
-        .await
-        .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
-        Ok(HttpResponse::Ok().finish())
-    } else {
-        Err(ApplicationError::AuthError(
-            AuthenticationError::Unauthorized,
-        ))
-    }
+        Uuid::new_v4(),
+        current_user.id,
+        query.slug,
+        query.generation_data
+    )
+    .execute(pool.as_ref())
+    .await?;
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[tracing::instrument(name = "qr_code::list", skip(pool, id))]
@@ -82,8 +79,7 @@ pub async fn list_qr_codes(pool: web::Data<PgPool>, id: Identity) -> Application
             current_user.id,
         )
         .fetch_all(pool.as_ref())
-        .await
-        .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
+        .await?;
         Ok(HttpResponse::Ok().body(format!("{:?}", qr_codes)))
     } else {
         Err(ApplicationError::AuthError(
