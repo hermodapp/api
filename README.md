@@ -1,13 +1,4 @@
-# Hermod
-The Hermod project is currently a monorepo split into two projects - api and www.
-
-Api contains a Rust server application executable that serves as our project's backend.
-
-Www contains a React webserver that serves as our project's frontend.
-
-Spec.yaml contains Digital Ocean Application specifications for our project's deployment.
-
-## API
+# Hermod API
 ### Running API
 #### Dependencies
 - [Rustup](https://rustup.rs)
