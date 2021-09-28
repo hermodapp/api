@@ -1,0 +1,2 @@
+ALTER TABLE feedback
+ALTER COLUMN payload TYPE TEXT;
