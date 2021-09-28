@@ -19,8 +19,7 @@ pub async fn list_forms(pool: web::Data<PgPool>, id: Identity) -> ApplicationRes
             current_user.id,
         )
         .fetch_all(pool.as_ref())
-        .await
-        .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
+        .await?;
         Ok(HttpResponse::Ok().body(format!("{:?},", forms)))
     } else {
         Err(ApplicationError::AuthError(
@@ -63,14 +62,12 @@ pub async fn get_form(
     // Validate that such a requested form exists
     if let Some(form) = sqlx::query!("SELECT * FROM form WHERE id=$1", &query.form_id)
         .fetch_optional(pool.as_ref())
-        .await
-        .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?
+        .await?
     {
         // Retrieve fields associated with form
         let fields = sqlx::query!("SELECT * FROM form_input WHERE form_id=$1", form.id)
             .fetch_all(pool.as_ref())
-            .await
-            .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
+            .await?;
 
         // Gather field types into a struct
         let form_response_data = FormGetResponse {
@@ -108,21 +105,24 @@ pub async fn store_form(
         new_form.account_id = current_user.id;
         new_form.store(pool.as_ref()).await?;
 
-        // Store all the fields
+        // Create a transaction to store each form input
+        let mut tx = pool.begin().await?;
+
+        // Queue a SQL query for each form input
         for field in request.fields.iter() {
             sqlx::query!(
-                r#"
-                    INSERT INTO form_input (id, form_id, type)
-                    VALUES ($1, $2, $3)
-                "#,
+                r#"INSERT INTO form_input (id, form_id, type) 
+                VALUES ($1, $2, $3)"#,
                 Uuid::new_v4(),
                 new_form.id,
                 field
             )
-            .execute(pool.as_ref())
-            .await
-            .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
+            .execute(&mut tx)
+            .await?;
         }
+
+        // Commit the transaction
+        tx.commit().await?;
 
         Ok(HttpResponse::Ok().body(format!("Stored new form with id {}.", new_form.id)))
     } else {
