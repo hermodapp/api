@@ -1,11 +1,11 @@
 use actix_identity::Identity;
 use actix_web::{web, HttpResponse};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::{auth::AuthenticationError, db::User, db::NewForm, handlers::ApplicationError};
 use super::ApplicationResponse;
+use crate::{auth::AuthenticationError, db::NewForm, db::User, handlers::ApplicationError};
 
 #[tracing::instrument(name = "form::list", skip(pool, id))]
 /// get(form/list) runs an SQL query to retrieve all the forms belonging to the user who sent the request
@@ -60,7 +60,6 @@ pub async fn get_form(
     query: web::Query<FormGetRequest>,
     pool: web::Data<PgPool>,
 ) -> ApplicationResponse {
-
     // Validate that such a requested form exists
     if let Some(form) = sqlx::query!("SELECT * FROM form WHERE id=$1", &query.form_id)
         .fetch_optional(pool.as_ref())
@@ -74,9 +73,11 @@ pub async fn get_form(
             .map_err(|e| ApplicationError::UnexpectedError(anyhow::anyhow!(e)))?;
 
         // Gather field types into a struct
-        let form_response_data = FormGetResponse { fields: fields.iter().map(|f| String::from(&f.r#type)).collect() };
+        let form_response_data = FormGetResponse {
+            fields: fields.iter().map(|f| String::from(&f.r#type)).collect(),
+        };
 
-        Ok(HttpResponse::Ok().body(format!("{}", serde_json::to_string(&form_response_data).unwrap())))
+        Ok(HttpResponse::Ok().body(serde_json::to_string(&form_response_data).unwrap()))
     } else {
         Err(ApplicationError::NotFoundError(format!(
             "No form found with id {}.",
@@ -88,7 +89,7 @@ pub async fn get_form(
 #[derive(Deserialize)]
 pub struct FormCreationRequest {
     pub qr_code_id: Uuid,
-    pub fields: Vec<String>
+    pub fields: Vec<String>,
 }
 
 #[tracing::instrument(name = "form::store", skip(request, pool, id))]
@@ -125,6 +126,8 @@ pub async fn store_form(
 
         Ok(HttpResponse::Ok().body(format!("Stored new form with id {}.", new_form.id)))
     } else {
-        Err(ApplicationError::AuthError(AuthenticationError::Unauthorized))
+        Err(ApplicationError::AuthError(
+            AuthenticationError::Unauthorized,
+        ))
     }
 }

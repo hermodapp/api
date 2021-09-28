@@ -1,17 +1,17 @@
 //! Contains HTTP Handlers that directly receive and respond to requests to the server.
 mod auth;
+mod form;
 mod health_check;
 mod qr_code;
-mod form;
 
 use actix_web::{
     http::{header, HeaderValue, StatusCode},
     HttpResponse, ResponseError,
 };
 pub use auth::*;
+pub use form::*;
 pub use health_check::*;
 pub use qr_code::*;
-pub use form::*;
 
 use crate::auth::AuthenticationError;
 

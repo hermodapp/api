@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 

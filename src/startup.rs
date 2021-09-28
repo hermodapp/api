@@ -11,7 +11,8 @@ use tracing::log::LevelFilter;
 
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::handlers::{
-    get_qr_code_data, health_check, list_qr_codes, login, logout, register, store_qr_code, store_form, get_form
+    get_form, get_qr_code_data, health_check, list_qr_codes, login, logout, register, store_form,
+    store_qr_code,
 };
 
 /// Represents the server application.
