@@ -9,7 +9,7 @@ use std::net::TcpListener;
 
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::handlers::{
-    get_qr_code_data, health_check, hello, login, logout, register, store_qr_code,
+    get_qr_code_data, health_check, hello, login, logout, register, store_qr_code, store_form, get_form
 };
 
 /// Represents the server application.
@@ -91,6 +91,8 @@ fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>
             .route("/health_check", web::get().to(health_check))
             .route("/qr_code", web::get().to(get_qr_code_data))
             .route("/qr_code/store", web::get().to(store_qr_code))
+            .route("/form", web::get().to(get_form))
+            .route("/form/store", web::post().to(store_form))
             .route("/", web::get().to(hello))
             .app_data(db_pool.clone())
     })
