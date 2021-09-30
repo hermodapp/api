@@ -1,13 +1,10 @@
-
 use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use super::ApplicationResponse;
-use crate::{
-    db::NewForm, handlers::ApplicationError, jwt::user_or_403,
-};
+use crate::{db::NewForm, handlers::ApplicationError, jwt::user_or_403};
 
 #[tracing::instrument(name = "form::list", skip(pool))]
 /// get(form/list) runs an SQL query to retrieve all the forms belonging to the user who sent the request

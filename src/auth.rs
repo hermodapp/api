@@ -1,12 +1,10 @@
 //! Contains methods used for user authentication and authorization.
 
-
 use actix_web::http::HeaderMap;
 use actix_web::HttpRequest;
 use anyhow::Context;
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use sqlx::PgPool;
-
 
 use crate::{db::User, handlers::ApplicationError};
 
