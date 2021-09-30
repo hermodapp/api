@@ -12,7 +12,7 @@ use tracing::log::LevelFilter;
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::handlers::{
     get_form, get_qr_code_data, health_check, list_qr_codes, login, logout, register, store_form,
-    store_qr_code,
+    store_qr_code, who_am_i,
 };
 
 /// Represents the server application.
@@ -84,6 +84,7 @@ fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>
             .wrap(cors)
             .route("/login", web::get().to(login))
             .route("/logout", web::get().to(logout))
+            .route("/whoami", web::get().to(who_am_i))
             .route("/register", web::post().to(register))
             .route("/health_check", web::get().to(health_check))
             .route("/qr_code", web::get().to(get_qr_code_data))

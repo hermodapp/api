@@ -1,8 +1,11 @@
-
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
 use sqlx::PgPool;
 
-use crate::{auth::validate_request_with_basic_auth, db::NewUser, jwt::encode_token};
+use crate::{
+    auth::validate_request_with_basic_auth,
+    db::NewUser,
+    jwt::{encode_token, user_or_403},
+};
 
 use super::ApplicationResponse;
 
@@ -42,6 +45,6 @@ pub async fn register(
     Ok(HttpResponse::Ok().body("New user stored.".to_string()))
 }
 
-pub async fn who_am_i() -> ApplicationResponse {
-    todo!("");
+pub async fn who_am_i(request: HttpRequest, pool: web::Data<PgPool>) -> ApplicationResponse {
+    Ok(HttpResponse::Ok().body(user_or_403(request, &pool).await?.username))
 }
