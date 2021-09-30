@@ -25,7 +25,7 @@ pub fn encode_token(user_id: Uuid) -> Result<String, anyhow::Error> {
         .timestamp();
 
     let my_claims = Claims {
-        sub: user_id.to_string().to_owned(),
+        sub: user_id.to_string(),
         iat: my_iat as usize,
         exp: my_exp as usize,
     };
@@ -39,7 +39,7 @@ pub fn encode_token(user_id: Uuid) -> Result<String, anyhow::Error> {
 
 pub fn decode_token(token: &str) -> Result<Claims, anyhow::Error> {
     Ok(decode::<Claims>(
-        &token,
+        token,
         &DecodingKey::from_secret(KEY),
         &Validation::default(),
     )?
@@ -53,7 +53,6 @@ pub async fn user_or_403(request: HttpRequest, pool: &PgPool) -> Result<User, Ap
             return Err(ApplicationError::AuthError(
                 AuthenticationError::Unauthorized,
             ))
-            .into()
         }
     };
 

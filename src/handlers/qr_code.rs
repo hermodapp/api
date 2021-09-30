@@ -1,11 +1,10 @@
-use actix_identity::Identity;
+
 use actix_web::{web, HttpRequest, HttpResponse};
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
-    auth::AuthenticationError,
-    db::{QrCode, User},
+    db::{QrCode},
     handlers::{json_response, ApplicationError},
     jwt::user_or_403,
 };

@@ -1,4 +1,4 @@
-use actix_identity::Identity;
+
 use actix_web::{web, HttpResponse};
 use sqlx::PgPool;
 

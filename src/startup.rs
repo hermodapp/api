@@ -1,6 +1,6 @@
 //! Contains code neccessary to bootstrap the application and run the server.
 use actix_cors::Cors;
-use actix_identity::{CookieIdentityPolicy, IdentityService};
+
 use actix_web::dev::Server;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};

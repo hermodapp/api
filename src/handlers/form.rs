@@ -1,4 +1,4 @@
-use actix_identity::Identity;
+
 use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use super::ApplicationResponse;
 use crate::{
-    auth::AuthenticationError, db::NewForm, db::User, handlers::ApplicationError, jwt::user_or_403,
+    db::NewForm, handlers::ApplicationError, jwt::user_or_403,
 };
 
 #[tracing::instrument(name = "form::list", skip(pool))]
