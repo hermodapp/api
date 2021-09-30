@@ -49,7 +49,7 @@ async fn get_qr_code_data_returns_data_for_valid_slug() {
         .text()
         .await
         .expect("Failed to extract text from result");
-    assert_eq!(response_body, data);
+    assert_eq!(response_body, "{\"generation_data\":\"{color: 'blue'}\"}");
 }
 
 #[actix_rt::test]

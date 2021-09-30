@@ -1,5 +1,7 @@
 use std::fmt::Debug;
+use std::str::FromStr;
 
+use anyhow::Context;
 use argon2::password_hash::SaltString;
 use argon2::Algorithm;
 use argon2::Argon2;
@@ -67,4 +69,17 @@ impl NewUser {
         .await?;
         Ok(())
     }
+}
+
+/// Returns a user from the database with the given `user_id`.
+pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, anyhow::Error> {
+    let user_id = Uuid::from_str(&user_id)?;
+    let user = sqlx::query_as!(User, "SELECT * FROM account WHERE id=$1", user_id)
+        .fetch_one(db_pool)
+        .await
+        .context(format!(
+            "Failed to fetch user with user_id {}",
+            user_id.to_string()
+        ))?;
+    Ok(user)
 }

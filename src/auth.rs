@@ -10,19 +10,6 @@ use uuid::Uuid;
 
 use crate::{db::User, handlers::ApplicationError};
 
-/// Returns a user from the database with the given `user_id`.
-pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, anyhow::Error> {
-    let user_id = Uuid::from_str(&user_id)?;
-    let user = sqlx::query_as!(User, "SELECT * FROM account WHERE id=$1", user_id)
-        .fetch_one(db_pool)
-        .await
-        .context(format!(
-            "Failed to fetch user with user_id {}",
-            user_id.to_string()
-        ))?;
-    Ok(user)
-}
-
 /// Validates a HTTP request with request headers
 /// conforming to the [Basic Auth RFC](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication).
 pub async fn validate_request_with_basic_auth(

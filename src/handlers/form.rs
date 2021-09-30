@@ -1,31 +1,27 @@
 use actix_identity::Identity;
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use super::ApplicationResponse;
-use crate::{auth::AuthenticationError, db::NewForm, db::User, handlers::ApplicationError};
+use crate::{
+    auth::AuthenticationError, db::NewForm, db::User, handlers::ApplicationError, jwt::user_or_403,
+};
 
-#[tracing::instrument(name = "form::list", skip(pool, id))]
+#[tracing::instrument(name = "form::list", skip(pool))]
 /// get(form/list) runs an SQL query to retrieve all the forms belonging to the user who sent the request
-pub async fn list_forms(pool: web::Data<PgPool>, id: Identity) -> ApplicationResponse {
-    if let Some(id) = id.identity() {
-        let current_user: User = serde_json::from_str(&id).unwrap();
-        let forms = sqlx::query!(
-            r#"
+pub async fn list_forms(pool: web::Data<PgPool>, request: HttpRequest) -> ApplicationResponse {
+    let current_user = user_or_403(request, &pool).await?;
+    let forms = sqlx::query!(
+        r#"
             SELECT * FROM form
             WHERE account_id=$1"#,
-            current_user.id,
-        )
-        .fetch_all(pool.as_ref())
-        .await?;
-        Ok(HttpResponse::Ok().body(format!("{:?},", forms)))
-    } else {
-        Err(ApplicationError::AuthError(
-            AuthenticationError::Unauthorized,
-        ))
-    }
+        current_user.id,
+    )
+    .fetch_all(pool.as_ref())
+    .await?;
+    Ok(HttpResponse::Ok().body(format!("{:?},", forms)))
 }
 
 /*
@@ -89,45 +85,39 @@ pub struct FormCreationRequest {
     pub fields: Vec<String>,
 }
 
-#[tracing::instrument(name = "form::store", skip(request, pool, id))]
+#[tracing::instrument(name = "form::store", skip(json, pool, request))]
 /// post(form/store) runs an SQL query to store a new form and all its associated fields
 pub async fn store_form(
-    request: web::Json<FormCreationRequest>,
+    json: web::Json<FormCreationRequest>,
     pool: web::Data<PgPool>,
-    id: Identity,
+    request: HttpRequest,
 ) -> ApplicationResponse {
-    if let Some(id) = id.identity() {
-        let current_user: User = serde_json::from_str(&id).unwrap();
+    let current_user = user_or_403(request, &pool).await?;
 
-        // Store form first to avoid foreign key constrain
-        let mut new_form = NewForm::default();
-        new_form.qr_code_id = request.qr_code_id;
-        new_form.account_id = current_user.id;
-        new_form.store(pool.as_ref()).await?;
+    // Store form first to avoid foreign key constrain
+    let mut new_form = NewForm::default();
+    new_form.qr_code_id = json.qr_code_id;
+    new_form.account_id = current_user.id;
+    new_form.store(pool.as_ref()).await?;
 
-        // Create a transaction to store each form input
-        let mut tx = pool.begin().await?;
+    // Create a transaction to store each form input
+    let mut tx = pool.begin().await?;
 
-        // Queue a SQL query for each form input
-        for field in request.fields.iter() {
-            sqlx::query!(
-                r#"INSERT INTO form_input (id, form_id, type) 
+    // Queue a SQL query for each form input
+    for field in json.fields.iter() {
+        sqlx::query!(
+            r#"INSERT INTO form_input (id, form_id, type) 
                 VALUES ($1, $2, $3)"#,
-                Uuid::new_v4(),
-                new_form.id,
-                field
-            )
-            .execute(&mut tx)
-            .await?;
-        }
-
-        // Commit the transaction
-        tx.commit().await?;
-
-        Ok(HttpResponse::Ok().body(format!("Stored new form with id {}.", new_form.id)))
-    } else {
-        Err(ApplicationError::AuthError(
-            AuthenticationError::Unauthorized,
-        ))
+            Uuid::new_v4(),
+            new_form.id,
+            field
+        )
+        .execute(&mut tx)
+        .await?;
     }
+
+    // Commit the transaction
+    tx.commit().await?;
+
+    Ok(HttpResponse::Ok().body(format!("Stored new form with id {}.", new_form.id)))
 }

@@ -82,11 +82,6 @@ fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>
 
         App::new()
             .wrap(cors)
-            .wrap(IdentityService::new(
-                CookieIdentityPolicy::new(&[0; 32])
-                    .name("auth-cookie")
-                    .secure(false),
-            ))
             .route("/login", web::get().to(login))
             .route("/logout", web::get().to(logout))
             .route("/register", web::post().to(register))
