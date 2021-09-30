@@ -1,10 +1,9 @@
-
 use actix_web::{web, HttpRequest, HttpResponse};
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
-    db::{QrCode},
+    db::QrCode,
     handlers::{json_response, ApplicationError},
     jwt::user_or_403,
 };
