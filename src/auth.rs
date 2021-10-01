@@ -53,6 +53,7 @@ async fn get_stored_credentials(
     username: &str,
     pool: &PgPool,
 ) -> Result<Option<(User, String)>, anyhow::Error> {
+    let username = username.to_lowercase();
     let row = sqlx::query_as!(
         User,
         r#"

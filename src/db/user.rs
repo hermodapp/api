@@ -47,6 +47,14 @@ impl NewUser {
         }
     }
 
+    pub fn new(username: String, password: String) -> Self {
+        Self {
+            username: username.to_ascii_lowercase(),
+            password,
+            ..Self::default()
+        }
+    }
+
     /// Store this struct in the users table
     pub async fn store(&self, pool: &PgPool) -> Result<(), anyhow::Error> {
         let salt = SaltString::generate(&mut rand::thread_rng());

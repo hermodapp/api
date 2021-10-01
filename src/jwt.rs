@@ -9,18 +9,23 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 use sqlx::PgPool;
 use uuid::Uuid;
 
+/// Claims represents the JWT payload.
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 pub struct Claims {
-    sub: String,
-    iat: usize,
-    exp: usize,
+    pub sub: String,
+    pub iat: usize,
+    pub exp: usize,
 }
 const KEY: &[u8] = b"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9";
 
-pub fn encode_token(user_id: Uuid) -> Result<String, anyhow::Error> {
+pub fn encode_token(user_id: Uuid) -> Result<String, AuthenticationError> {
+    Ok(encode_token_with_exp(user_id, 60 * 60)?)
+}
+
+pub fn encode_token_with_exp(user_id: Uuid, exp_offset: i64) -> Result<String, anyhow::Error> {
     let my_iat = Utc::now().timestamp();
     let my_exp = Utc::now()
-        .checked_add_signed(Duration::hours(1))
+        .checked_add_signed(Duration::seconds(exp_offset))
         .expect("invalid timestamp")
         .timestamp();
 
@@ -47,15 +52,10 @@ pub fn decode_token(token: &str) -> Result<Claims, anyhow::Error> {
 }
 
 pub async fn user_or_403(request: HttpRequest, pool: &PgPool) -> Result<User, ApplicationError> {
-    let auth_header = match request.headers().get("Authorization") {
-        Some(a) => a,
-        None => {
-            return Err(ApplicationError::AuthError(
-                AuthenticationError::Unauthorized,
-            ))
-        }
-    };
-
+    let auth_header = request
+        .headers()
+        .get("Authorization")
+        .ok_or_else(|| AuthenticationError::Unauthorized)?;
     let token = auth_header
         .to_str()
         .map_err(|e| AuthenticationError::UnexpectedError(anyhow::anyhow!(e)))?;

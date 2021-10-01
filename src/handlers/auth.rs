@@ -10,12 +10,8 @@ use crate::{
 use super::ApplicationResponse;
 
 #[tracing::instrument(name = "handlers::login", skip(request, pool))]
-/// Get(/login) attempts to log a user in, and if successful stores the user in a session variable
-pub async fn login(
-    request: web::HttpRequest,
-    pool: web::Data<PgPool>,
-    // id: Identity,
-) -> ApplicationResponse {
+/// Get(/login) attempts to log a user in, and if successful returns a JWT token
+pub async fn login(request: web::HttpRequest, pool: web::Data<PgPool>) -> ApplicationResponse {
     let user = validate_request_with_basic_auth(request, &pool).await?;
     let token = encode_token(user.id)?;
     Ok(HttpResponse::Ok().body(token))
@@ -37,9 +33,7 @@ pub async fn register(
     pool: web::Data<PgPool>,
     query: web::Form<RegistrationRequest>,
 ) -> ApplicationResponse {
-    let mut new_user = NewUser::default();
-    new_user.username = query.username.clone();
-    new_user.password = query.password.clone();
+    let mut new_user = NewUser::new(query.username.clone(), query.password.clone());
     new_user.store(&pool).await?;
 
     Ok(HttpResponse::Ok().body("New user stored.".to_string()))
