@@ -1,7 +1,7 @@
 use core::time;
 use std::thread;
 
-use hermod::jwt::{decode_token, encode_token_with_exp};
+use uuid::Uuid;
 
 use crate::helpers::{login, spawn_app};
 
@@ -62,7 +62,7 @@ async fn auth_request_with_valid_credentials_is_accepted() {
     assert_eq!(200, response.status().as_u16());
 
     let token = response.text().await.unwrap();
-    let claim = decode_token(token.as_str());
+    let claim = app.jwt_client.decode_token(token.as_str());
     assert_eq!(claim.unwrap().sub, app.test_user.id.to_string());
 }
 
@@ -109,7 +109,10 @@ async fn expired_jwt_tokens_are_rejected() {
     let app = spawn_app().await;
     let username = app.test_user.username.to_string();
     let client = reqwest::Client::new();
-    let token = encode_token_with_exp(app.test_user.id, 1).unwrap();
+    let token = app
+        .jwt_client
+        .encode_token_with_exp(app.test_user.id, 1)
+        .unwrap();
     thread::sleep(time::Duration::from_secs(2));
     let response = client
         .get(format!("{}/whoami", app.address))
@@ -120,6 +123,15 @@ async fn expired_jwt_tokens_are_rejected() {
 
     assert_ne!(response.status(), 200);
     assert_ne!(response.text().await.unwrap(), username);
+}
+
+#[actix_rt::test]
+async fn test_encode_and_decode_token() {
+    let app = spawn_app().await;
+    let user_id = Uuid::new_v4();
+    let token = app.jwt_client.encode_token(user_id).unwrap();
+    let result = app.jwt_client.decode_token(&token).unwrap();
+    assert_eq!(result.sub, user_id.to_string());
 }
 
 #[actix_rt::test]

@@ -4,12 +4,16 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use super::ApplicationResponse;
-use crate::{db::NewForm, handlers::ApplicationError, jwt::user_or_403};
+use crate::{db::NewForm, handlers::ApplicationError, jwt::JwtClient};
 
-#[tracing::instrument(name = "form::list", skip(pool))]
+#[tracing::instrument(name = "form::list", skip(pool, jwt))]
 /// get(form/list) runs an SQL query to retrieve all the forms belonging to the user who sent the request
-pub async fn list_forms(pool: web::Data<PgPool>, request: HttpRequest) -> ApplicationResponse {
-    let current_user = user_or_403(request, &pool).await?;
+pub async fn list_forms(
+    pool: web::Data<PgPool>,
+    request: HttpRequest,
+    jwt: web::Data<JwtClient>,
+) -> ApplicationResponse {
+    let current_user = jwt.user_or_403(request).await?;
     let forms = sqlx::query!(
         r#"
             SELECT * FROM form
@@ -82,14 +86,15 @@ pub struct FormCreationRequest {
     pub fields: Vec<String>,
 }
 
-#[tracing::instrument(name = "form::store", skip(json, pool, request))]
+#[tracing::instrument(name = "form::store", skip(json, pool, request, jwt))]
 /// post(form/store) runs an SQL query to store a new form and all its associated fields
 pub async fn store_form(
     json: web::Json<FormCreationRequest>,
     pool: web::Data<PgPool>,
     request: HttpRequest,
+    jwt: web::Data<JwtClient>,
 ) -> ApplicationResponse {
-    let current_user = user_or_403(request, &pool).await?;
+    let current_user = jwt.user_or_403(request).await?;
 
     // Store form first to avoid foreign key constrain
     let mut new_form = NewForm::default();

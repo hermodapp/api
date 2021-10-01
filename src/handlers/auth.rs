@@ -1,19 +1,19 @@
 use actix_web::{web, HttpRequest, HttpResponse};
 use sqlx::PgPool;
 
-use crate::{
-    auth::validate_request_with_basic_auth,
-    db::NewUser,
-    jwt::{encode_token, user_or_403},
-};
+use crate::{auth::validate_request_with_basic_auth, db::NewUser, jwt::JwtClient};
 
 use super::ApplicationResponse;
 
-#[tracing::instrument(name = "handlers::login", skip(request, pool))]
+#[tracing::instrument(name = "handlers::login", skip(request, pool, jwt_client))]
 /// Get(/login) attempts to log a user in, and if successful returns a JWT token
-pub async fn login(request: web::HttpRequest, pool: web::Data<PgPool>) -> ApplicationResponse {
+pub async fn login(
+    request: web::HttpRequest,
+    pool: web::Data<PgPool>,
+    jwt_client: web::Data<JwtClient>,
+) -> ApplicationResponse {
     let user = validate_request_with_basic_auth(request, &pool).await?;
-    let token = encode_token(user.id)?;
+    let token = jwt_client.encode_token(user.id)?;
     Ok(HttpResponse::Ok().body(token))
 }
 
@@ -39,6 +39,10 @@ pub async fn register(
     Ok(HttpResponse::Ok().body("New user stored.".to_string()))
 }
 
-pub async fn who_am_i(request: HttpRequest, pool: web::Data<PgPool>) -> ApplicationResponse {
-    Ok(HttpResponse::Ok().body(user_or_403(request, &pool).await?.username))
+pub async fn who_am_i(
+    request: HttpRequest,
+    jwt_client: web::Data<JwtClient>,
+) -> ApplicationResponse {
+    let user = jwt_client.user_or_403(request).await?;
+    Ok(HttpResponse::Ok().body(user.username))
 }

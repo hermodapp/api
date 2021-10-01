@@ -1,3 +1,4 @@
+use reqwest::Method;
 use uuid::Uuid;
 
 use crate::helpers::spawn_app;
@@ -55,7 +56,6 @@ async fn get_qr_code_data_returns_data_for_valid_slug() {
 #[actix_rt::test]
 async fn store_qr_code_data_rejects_unauthorized_users() {
     let app = spawn_app().await;
-    // app.login().await.expect("Failed to log test user in");
 
     let client = reqwest::Client::new();
     let data = "test_data";
@@ -74,28 +74,22 @@ async fn store_qr_code_data_rejects_unauthorized_users() {
 
 #[actix_rt::test]
 async fn store_qr_code_data_accepts_valid_users() {
-    let app = spawn_app().await;
+    let mut app = spawn_app().await;
     app.login().await.expect("Failed to log test user in");
-
-    let client = reqwest::Client::new();
-    client
-        .get(format!("{}/login", app.address))
-        .basic_auth(app.test_user.username, Some(app.test_user.password))
-        .send()
-        .await
-        .expect("Failed to execute request.");
 
     let data = "test_data";
     let slug = "123532";
-    let response = client
-        .get(&format!(
-            "{}/qr_code/store?generation_data={}&slug={}",
-            app.address, data, slug
-        ))
-        .send()
+    let response = app
+        .send_request_with_auth(
+            Method::GET,
+            format!(
+                "{}/qr_code/store?generation_data={}&slug={}",
+                app.address, data, slug
+            ),
+        )
         .await
-        .expect("Failed to execute request.");
-    // println!("{}", response.status());
-    // assert!(response.status() == 200);
+        .expect("Failed to send QR code storage request");
+
+    assert!(response.status() == 200);
     assert_eq!(Some(0), response.content_length());
 }

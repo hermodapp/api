@@ -1,10 +1,12 @@
 use hermod::{
     configuration::{get_configuration, DatabaseSettings},
     db::NewUser,
+    jwt::JwtClient,
     startup::{get_connection_pool, Application},
     telemetry::{get_subscriber, init_subscriber},
 };
 use once_cell::sync::Lazy;
+use reqwest::{Method, RequestBuilder, Response};
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 
@@ -49,14 +51,19 @@ pub async fn spawn_app() -> TestApp {
     let application_port = application.port();
     let _ = tokio::spawn(application.run_until_stopped());
 
+    let pool = get_connection_pool(&configuration.database)
+        .await
+        .expect("Failed to connect to the database");
+
+    let jwt_client = JwtClient::new(configuration.application.jwt_signing_key, pool.clone());
+
     let test_app = TestApp {
         address: format!("http://localhost:{}", application_port),
         port: application_port,
-        db_pool: get_connection_pool(&configuration.database)
-            .await
-            .expect("Failed to connect to the database"),
-        // email_server,
+        db_pool: pool,
+        jwt_client,
         test_user: NewUser::default(),
+        jwt_token: "".to_string(),
     };
 
     test_app.test_user.store(&test_app.db_pool).await.unwrap();
@@ -77,10 +84,6 @@ async fn configure_database(config: &DatabaseSettings) -> PgPool {
     let connection_pool = PgPool::connect_with(config.with_db())
         .await
         .expect("Failed to connect to Postgres.");
-    // sqlx::migrate!("./migrations")
-    //     .run(&connection_pool)
-    //     .await
-    //     .expect("Failed to migrate the database");
 
     connection_pool
 }
@@ -89,20 +92,34 @@ pub struct TestApp {
     pub address: String,
     pub port: u16,
     pub db_pool: PgPool,
-    // pub email_server: MockServer,
     pub test_user: NewUser,
+    pub jwt_client: JwtClient,
+    jwt_token: String,
 }
 
 impl TestApp {
-    #[allow(dead_code)]
-    pub async fn login(&self) -> anyhow::Result<()> {
-        login(
+    pub async fn login(&mut self) -> anyhow::Result<()> {
+        let response = login(
             self,
             self.test_user.username.to_string(),
             self.test_user.password.to_string(),
         )
         .await;
+        self.jwt_token = response.text().await?;
         Ok(())
+    }
+
+    pub async fn send_request_with_auth(
+        &self,
+        method: Method,
+        url: String,
+    ) -> Result<Response, anyhow::Error> {
+        let client = reqwest::Client::new();
+        Ok(client
+            .request(method, url)
+            .header("Authorization", self.jwt_token.clone())
+            .send()
+            .await?)
     }
 }
 

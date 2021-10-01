@@ -14,6 +14,7 @@ use crate::handlers::{
     get_form, get_qr_code_data, health_check, list_qr_codes, login, logout, register, store_form,
     store_qr_code, who_am_i,
 };
+use crate::jwt::JwtClient;
 
 /// Represents the server application.
 pub struct Application {
@@ -28,6 +29,11 @@ impl Application {
             .await
             .expect("Failed to connect to Postgres.");
 
+        let jwt_client = JwtClient::new(
+            configuration.application.jwt_signing_key,
+            connection_pool.clone(),
+        );
+
         sqlx::migrate!("./migrations")
             .run(&connection_pool)
             .await
@@ -39,7 +45,8 @@ impl Application {
         );
         let listener = TcpListener::bind(&address)?;
         let port = listener.local_addr().unwrap().port();
-        let server = run(listener, connection_pool)?;
+
+        let server = run(listener, connection_pool, jwt_client)?;
 
         Ok(Self { port, server })
     }
@@ -68,8 +75,13 @@ pub async fn get_connection_pool(configuration: &DatabaseSettings) -> Result<PgP
         .await
 }
 
-fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
+fn run(
+    listener: TcpListener,
+    db_pool: PgPool,
+    jwt_client: JwtClient,
+) -> Result<Server, std::io::Error> {
     let db_pool = Data::new(db_pool);
+    let jwt_client = Data::new(jwt_client);
     let server = HttpServer::new(move || {
         let cors = Cors::default()
             .allowed_origin_fn(|origin, _req_head| {
@@ -93,6 +105,7 @@ fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error>
             .route("/form", web::get().to(get_form))
             .route("/form/store", web::post().to(store_form))
             .app_data(db_pool.clone())
+            .app_data(jwt_client.clone())
     })
     .listen(listener)?
     .run();

@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::{
     db::QrCode,
     handlers::{json_response, ApplicationError},
-    jwt::user_or_403,
+    jwt::JwtClient,
 };
 use serde::Deserialize;
 
@@ -48,14 +48,15 @@ pub struct NewQrCodeRequest {
     pub slug: String,
 }
 
-#[tracing::instrument(name = "qr_code::store", skip(pool, query))]
+#[tracing::instrument(name = "qr_code::store", skip(pool, query, jwt))]
 /// get(/qr_code/store?generation_data={DATA}&slug={SLUG}) stores a QR code with the relevant information
 pub async fn store_qr_code(
     pool: web::Data<PgPool>,
     query: web::Query<NewQrCodeRequest>,
     request: HttpRequest,
+    jwt: web::Data<JwtClient>,
 ) -> ApplicationResponse {
-    let user = user_or_403(request, &pool).await?;
+    let user = jwt.user_or_403(request).await?;
 
     sqlx::query!(
         r#"
@@ -76,10 +77,14 @@ pub struct ListQrCodesResponse {
     pub qr_codes: Vec<QrCode>,
 }
 
-#[tracing::instrument(name = "qr_code::list", skip(pool, request))]
+#[tracing::instrument(name = "qr_code::list", skip(pool, request, jwt))]
 /// get(/qr_codes) lists QR codes assosciated with a given user
-pub async fn list_qr_codes(pool: web::Data<PgPool>, request: HttpRequest) -> ApplicationResponse {
-    let user = user_or_403(request, &pool).await?;
+pub async fn list_qr_codes(
+    pool: web::Data<PgPool>,
+    request: HttpRequest,
+    jwt: web::Data<JwtClient>,
+) -> ApplicationResponse {
+    let user = jwt.user_or_403(request).await?;
 
     let qr_codes = sqlx::query_as!(
         QrCode,
