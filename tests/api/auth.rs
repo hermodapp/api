@@ -1,7 +1,7 @@
 use core::time;
 use std::thread;
 
-use hermod::jwt::{decode_token, encode_token, encode_token_with_exp};
+use hermod::jwt::{decode_token, encode_token_with_exp};
 
 use crate::helpers::{login, spawn_app};
 
