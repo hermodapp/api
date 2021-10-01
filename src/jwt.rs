@@ -54,8 +54,7 @@ pub fn decode_token(token: &str) -> Result<Claims, anyhow::Error> {
 pub async fn user_or_403(request: HttpRequest, pool: &PgPool) -> Result<User, ApplicationError> {
     let auth_header = request
         .headers()
-        .get("Authorization")
-        .ok_or_else(|| AuthenticationError::Unauthorized)?;
+        .get("Authorization").ok_or(AuthenticationError::Unauthorized)?;
     let token = auth_header
         .to_str()
         .map_err(|e| AuthenticationError::UnexpectedError(anyhow::anyhow!(e)))?;
