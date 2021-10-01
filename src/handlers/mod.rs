@@ -52,6 +52,10 @@ impl ResponseError for ApplicationError {
     }
 }
 
+pub fn json_response(data: impl serde::Serialize) -> ApplicationResponse {
+    Ok(HttpResponse::Ok().json(data))
+}
+
 impl std::fmt::Debug for ApplicationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         crate::error::error_chain_fmt(self, f)

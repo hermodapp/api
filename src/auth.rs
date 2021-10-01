@@ -1,27 +1,12 @@
 //! Contains methods used for user authentication and authorization.
-use std::str::FromStr;
 
 use actix_web::http::HeaderMap;
 use actix_web::HttpRequest;
 use anyhow::Context;
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use sqlx::PgPool;
-use uuid::Uuid;
 
 use crate::{db::User, handlers::ApplicationError};
-
-/// Returns a user from the database with the given `user_id`.
-pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, anyhow::Error> {
-    let user_id = Uuid::from_str(&user_id)?;
-    let user = sqlx::query_as!(User, "SELECT * FROM account WHERE id=$1", user_id)
-        .fetch_one(db_pool)
-        .await
-        .context(format!(
-            "Failed to fetch user with user_id {}",
-            user_id.to_string()
-        ))?;
-    Ok(user)
-}
 
 /// Validates a HTTP request with request headers
 /// conforming to the [Basic Auth RFC](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication).
@@ -68,6 +53,7 @@ async fn get_stored_credentials(
     username: &str,
     pool: &PgPool,
 ) -> Result<Option<(User, String)>, anyhow::Error> {
+    let username = username.to_lowercase();
     let row = sqlx::query_as!(
         User,
         r#"

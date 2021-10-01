@@ -13,5 +13,6 @@ pub mod configuration;
 pub mod db;
 pub mod error;
 pub mod handlers;
+pub mod jwt;
 pub mod startup;
 pub mod telemetry;

@@ -17,6 +17,7 @@ pub struct ApplicationSettings {
     pub port: u16,
     pub host: String,
     pub base_url: String,
+    pub jwt_signing_key: String,
 }
 
 /// Contains settings for the database connection.
