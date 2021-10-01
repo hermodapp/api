@@ -6,7 +6,7 @@ use hermod::{
     telemetry::{get_subscriber, init_subscriber},
 };
 use once_cell::sync::Lazy;
-use reqwest::{Method, RequestBuilder, Response};
+use reqwest::{Method, Response};
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 
