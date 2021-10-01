@@ -33,7 +33,7 @@ pub async fn register(
     pool: web::Data<PgPool>,
     query: web::Form<RegistrationRequest>,
 ) -> ApplicationResponse {
-    let mut new_user = NewUser::new(query.username.clone(), query.password.clone());
+    let new_user = NewUser::new(query.username.clone(), query.password.clone());
     new_user.store(&pool).await?;
 
     Ok(HttpResponse::Ok().body("New user stored.".to_string()))
