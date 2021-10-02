@@ -25,7 +25,7 @@ pub fn get_subscriber(
         .with_exporter(
             opentelemetry_otlp::new_exporter()
                 .tonic()
-                .with_endpoint("collector:4317"),
+                .with_endpoint("https://collector:4317"),
         )
         .install_batch(opentelemetry::runtime::Tokio)
         .expect("Failed to install tracing pipeline.");
