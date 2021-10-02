@@ -31,23 +31,16 @@ pub enum ApplicationError {
 impl ResponseError for ApplicationError {
     fn error_response(&self) -> HttpResponse {
         match self {
-            Self::UnexpectedError(e) => {
-                tracing::error!("{:?}", e);
-                HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR)
-            }
+            Self::UnexpectedError(e) => HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
             Self::AuthError(e) => {
                 let mut response = HttpResponse::new(StatusCode::UNAUTHORIZED);
                 let header_value = HeaderValue::from_str(r#"Basic realm="publish""#).unwrap();
                 response
                     .headers_mut()
                     .insert(header::WWW_AUTHENTICATE, header_value);
-                tracing::error!("{:?}", e);
                 response
             }
-            Self::NotFoundError(message) => {
-                tracing::error!("404 Not Found: {}", message);
-                HttpResponse::new(StatusCode::NOT_FOUND)
-            }
+            Self::NotFoundError(message) => HttpResponse::new(StatusCode::NOT_FOUND),
         }
     }
 }

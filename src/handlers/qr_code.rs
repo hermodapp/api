@@ -48,7 +48,7 @@ pub struct NewQrCodeRequest {
     pub slug: String,
 }
 
-#[tracing::instrument(name = "qr_code::store", skip(pool, query, jwt))]
+#[tracing::instrument(name = "qr_code::store", skip(pool, query, jwt), fields(username=tracing::field::Empty, user_id=tracing::field::Empty))]
 /// get(/qr_code/store?generation_data={DATA}&slug={SLUG}) stores a QR code with the relevant information
 pub async fn store_qr_code(
     pool: web::Data<PgPool>,
@@ -57,6 +57,8 @@ pub async fn store_qr_code(
     jwt: web::Data<JwtClient>,
 ) -> ApplicationResponse {
     let user = jwt.user_or_403(request).await?;
+    tracing::Span::current().record("username", &tracing::field::display(&user.username));
+    tracing::Span::current().record("user_id", &tracing::field::display(&user.id));
 
     sqlx::query!(
         r#"

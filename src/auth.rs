@@ -20,6 +20,9 @@ pub async fn validate_request_with_basic_auth(
     Ok(user)
 }
 
+#[tracing::instrument(name = "services::auth::validate_credentials", skip(credentials, pool), fields(
+    username=%credentials.username,
+))]
 async fn validate_credentials(
     credentials: Credentials,
     pool: &PgPool,

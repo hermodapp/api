@@ -19,10 +19,12 @@ impl JwtClient {
         Self { auth_key, pool }
     }
 
+    #[tracing::instrument(name = "services::jwt::encode_token", skip(self))]
     pub fn encode_token(&self, user_id: Uuid) -> Result<String, AuthenticationError> {
         Ok(self.encode_token_with_exp(user_id, 60 * 60)?)
     }
 
+    #[tracing::instrument(name = "services::jwt::encode_token_with_exp", skip(self))]
     pub fn encode_token_with_exp(
         &self,
         user_id: Uuid,
@@ -47,6 +49,7 @@ impl JwtClient {
         )?)
     }
 
+    #[tracing::instrument(name = "services::jwt::decode_token", skip(self))]
     pub fn decode_token(&self, token: &str) -> Result<Claims, anyhow::Error> {
         Ok(decode::<Claims>(
             token,
@@ -56,6 +59,7 @@ impl JwtClient {
         .claims)
     }
 
+    #[tracing::instrument(name = "services::jwt::user_or_403", skip(self))]
     pub async fn user_or_403(&self, request: HttpRequest) -> Result<User, ApplicationError> {
         let auth_header = request
             .headers()

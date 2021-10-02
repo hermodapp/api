@@ -1,3 +1,5 @@
+alerts:
+  - rule: DEPLOYMENT_FAILED
 databases:
   - engine: PG
     name: hermod
@@ -8,10 +10,24 @@ domains:
   - domain: api.hermodapp.com
     type: PRIMARY
     zone: hermodapp.com
-name: hermod
+  - domain: www.api.hermodapp.com
+    type: ALIAS
+    zone: hermodapp.com
+name: api
 region: nyc
 services:
-  - dockerfile_path: api/Dockerfile
+  - cors:
+      allow_credentials: true
+      allow_headers:
+        - Authorization
+      allow_methods:
+        - GET
+        - POST
+      allow_origins:
+        - exact: http://localhost:3000
+        - prefix: https://hermodapp.com
+      max_age: 1h
+    dockerfile_path: ./Dockerfile
     envs:
       - key: APP_DATABASE__USERNAME
         scope: RUN_TIME
@@ -28,10 +44,16 @@ services:
       - key: APP_DATABASE__DATABASE_NAME
         scope: RUN_TIME
         value: ${hermod.DATABASE}
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${hermod.DATABASE_URL}
+      - key: APP_APPLICATION__JWT_SIGNING_KEY
+        scope: RUN_AND_BUILD_TIME
+        value: eyJzdWIiOiI4ZTM5YzI3ZC0yMTRkLTQ1ZmEtOWZmNC1iODk3MTE4N2M4OGMiLCJpYXQiOjE2MzMwMzc1MDgsImV4cCI6MTYzMzA0MTEwOH0
     github:
       branch: main
       deploy_on_push: true
-      repo: cs495wifly/hermod
+      repo: hermodapp/api
     health_check:
       http_path: /health_check
     http_port: 8000
@@ -40,4 +62,24 @@ services:
     name: api
     routes:
       - path: /
-    source_dir: api/.
+    source_dir: /
+workers:
+  - environment_slug: hugo
+    envs:
+      - key: HONEYCOMB_API_KEY
+        scope: RUN_TIME
+        value: 6145c94ce788666f2da3cd06c582ae5e
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: hermodapp/collector
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    name: collector
+    run_command: |-
+      docker run --rm -p 4318:4318 -p 4317:4317 \
+            -e HONEYCOMB_API_KEY="${HONEYCOMB_API_KEY}" \
+            -v "${PWD}/config.yaml":/config.yaml \
+            --name otelcol otel/opentelemetry-collector \
+            --config config.yaml;
+    source_dir: /
