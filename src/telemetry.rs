@@ -1,5 +1,7 @@
 //! Contains functions that configure and initialize tracing telemetry, as well as additional helpers.
 use actix_web::rt::task::JoinHandle;
+use opentelemetry_otlp::WithExportConfig;
+// use opentelemetry::trace::Tracer;
 use tracing::subscriber::set_global_default;
 use tracing::Subscriber;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
@@ -18,11 +20,23 @@ pub fn get_subscriber(
     env_filter: String,
     sink: impl MakeWriter + Send + Sync + 'static,
 ) -> impl Subscriber + Sync + Send {
+    let tracer = opentelemetry_otlp::new_pipeline()
+        .tracing()
+        .with_exporter(
+            opentelemetry_otlp::new_exporter()
+                .tonic()
+                .with_endpoint("collector:4317"),
+        )
+        .install_batch(opentelemetry::runtime::Tokio)
+        .expect("Failed to install tracing pipeline.");
+    let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
+
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(env_filter));
     let formatting_layer = BunyanFormattingLayer::new(name, sink);
     Registry::default()
         .with(env_filter)
+        .with(telemetry)
         .with(JsonStorageLayer)
         .with(formatting_layer)
 }

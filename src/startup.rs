@@ -8,6 +8,7 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::{ConnectOptions, PgPool};
 use std::net::TcpListener;
 use tracing::log::LevelFilter;
+use tracing_actix_web::TracingLogger;
 
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::handlers::{
@@ -93,6 +94,7 @@ fn run(
             .max_age(3600);
 
         App::new()
+            .wrap(TracingLogger::default())
             .wrap(cors)
             .route("/login", web::get().to(login))
             .route("/logout", web::get().to(logout))
