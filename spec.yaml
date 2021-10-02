@@ -15,24 +15,23 @@ domains:
     zone: hermodapp.com
 name: api
 region: nyc
-
-workers:
-  - image: otel/opentelemetry-collector
+services:
+  - dockerfile_path: Dockerfile
     envs:
       - key: HONEYCOMB_API_KEY
-        scope: RUN_AND_BUILD_TIME
-        value: 6145c94ce788666f2da3cd06c582ae5e
-    run_command: |
-      docker run --rm -p 4318:4318 -p 4317:4317 \
-      -e HONEYCOMB_API_KEY="${HONEYCOMB_API_KEY}" \
-      -v "${PWD}/config.yaml":/config.yaml \
-      --name otelcol otel/opentelemetry-collector \
-      --config config.yaml;
+        scope: RUN_TIME
+        type: SECRET
+        value: EV[1:5G932Y/hRpHIASV4nKq0EsQ4GpxMlpYL:kGWlFqpt6dEPuVJn7/AxY9+WHFaEg/iAxttq6HW25ftnUxezn2JAEZl5rjQ06C3/]
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: hermodapp/collector
     instance_count: 1
     instance_size_slug: basic-xxs
+    internal_ports:
+      - 4317
     name: collector
-
-services:
+    source_dir: /
   - cors:
       allow_credentials: true
       allow_headers:
@@ -66,7 +65,8 @@ services:
         value: ${hermod.DATABASE_URL}
       - key: APP_APPLICATION__JWT_SIGNING_KEY
         scope: RUN_AND_BUILD_TIME
-        value: eyJzdWIiOiI4ZTM5YzI3ZC0yMTRkLTQ1ZmEtOWZmNC1iODk3MTE4N2M4OGMiLCJpYXQiOjE2MzMwMzc1MDgsImV4cCI6MTYzMzA0MTEwOH0
+        type: SECRET
+        value: EV[1:vMHj9T3s3Aq6PDsgPy+rBFkXtc5nUujr:HUqZp6JEL+6aJYFpbyBTBRXXgZVKMJnA1esz/PGGPp77/bTP86bLuLCB6YdC5lEJgENMIN56JZ8RZFalfulfAbaY5IOUWXn3ZuDmAby4EV4fEZoG6lPbnlXLllzCPf1R0S8AdpW2snd1w77yVtgx5QFYQrVnGFnx0xLs]
     github:
       branch: main
       deploy_on_push: true
