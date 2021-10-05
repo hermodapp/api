@@ -3,7 +3,7 @@ use hermod::{
     db::NewUser,
     jwt::JwtClient,
     startup::{get_connection_pool, Application},
-    telemetry::{get_subscriber, init_subscriber},
+    telemetry::{get_subscriber_test, init_subscriber},
 };
 use once_cell::sync::Lazy;
 use reqwest::{Method, Response};
@@ -15,10 +15,11 @@ static TRACING: Lazy<()> = Lazy::new(|| {
     let default_filter_level = "info".to_string();
     let subscriber_name = "test".to_string();
     if std::env::var("TEST_LOG").is_ok() {
-        let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::stdout);
+        let subscriber =
+            get_subscriber_test(subscriber_name, default_filter_level, std::io::stdout);
         init_subscriber(subscriber);
     } else {
-        let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::sink);
+        let subscriber = get_subscriber_test(subscriber_name, default_filter_level, std::io::sink);
         init_subscriber(subscriber);
     };
 });

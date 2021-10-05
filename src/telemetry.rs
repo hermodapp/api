@@ -19,13 +19,14 @@ pub fn get_subscriber(
     name: String,
     env_filter: String,
     sink: impl MakeWriter + Send + Sync + 'static,
+    endpoint_url: &String,
 ) -> impl Subscriber + Sync + Send {
     let tracer = opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_exporter(
             opentelemetry_otlp::new_exporter()
                 .tonic()
-                .with_endpoint("https://collector:4317"),
+                .with_endpoint(endpoint_url.as_str()),
         )
         .install_batch(opentelemetry::runtime::Tokio)
         .expect("Failed to install tracing pipeline.");
@@ -34,9 +35,25 @@ pub fn get_subscriber(
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(env_filter));
     let formatting_layer = BunyanFormattingLayer::new(name, sink);
+
     Registry::default()
         .with(env_filter)
+        .with(JsonStorageLayer)
+        .with(formatting_layer)
         .with(telemetry)
+}
+
+pub fn get_subscriber_test(
+    name: String,
+    env_filter: String,
+    sink: impl MakeWriter + Send + Sync + 'static,
+) -> impl Subscriber + Sync + Send {
+    let env_filter =
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(env_filter));
+    let formatting_layer = BunyanFormattingLayer::new(name, sink);
+
+    Registry::default()
+        .with(env_filter)
         .with(JsonStorageLayer)
         .with(formatting_layer)
 }

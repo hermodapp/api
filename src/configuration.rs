@@ -18,6 +18,7 @@ pub struct ApplicationSettings {
     pub host: String,
     pub base_url: String,
     pub jwt_signing_key: String,
+    pub honeycomb_url: String,
 }
 
 /// Contains settings for the database connection.

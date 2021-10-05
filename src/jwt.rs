@@ -1,9 +1,11 @@
+use std::future::Future;
+
 use crate::{
     auth::AuthenticationError,
     db::{get_user_by_id, User},
     handlers::ApplicationError,
 };
-use actix_web::HttpRequest;
+use actix_web::{web::Payload, FromRequest, HttpRequest};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use sqlx::PgPool;
@@ -59,7 +61,6 @@ impl JwtClient {
         .claims)
     }
 
-    #[tracing::instrument(name = "services::jwt::user_or_403", skip(self))]
     pub async fn user_or_403(&self, request: HttpRequest) -> Result<User, ApplicationError> {
         let auth_header = request
             .headers()
@@ -72,6 +73,8 @@ impl JwtClient {
             .decode_token(token)
             .map_err(|e| AuthenticationError::UnexpectedError(anyhow::anyhow!(e)))?;
         let user = get_user_by_id(claims.sub, &self.pool).await?;
+        tracing::Span::current().record("username", &tracing::field::display(&user.username));
+        tracing::Span::current().record("user_id", &tracing::field::display(&user.id));
         Ok(user)
     }
 }
