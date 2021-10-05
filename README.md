@@ -1,4 +1,4 @@
-# Hermod API
+# Hermod API [![dependency status](https://deps.rs/repo/github/hermodapp/api/status.svg)](https://deps.rs/repo/github/hermodapp/api)
 ### Running API
 #### Dependencies
 - [Rustup](https://rustup.rs)
