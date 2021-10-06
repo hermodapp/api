@@ -70,7 +70,7 @@ impl NewUser {
             "INSERT INTO account (id, username, password)
             VALUES ($1, $2, $3)",
             self.id,
-            self.username,
+            self.username.to_lowercase(),
             password_hash,
         )
         .execute(pool)
