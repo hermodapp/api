@@ -1,11 +1,9 @@
-
-
 use crate::{
     auth::AuthenticationError,
     db::{get_user_by_id, User},
     handlers::ApplicationError,
 };
-use actix_web::{HttpRequest};
+use actix_web::HttpRequest;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use sqlx::PgPool;
