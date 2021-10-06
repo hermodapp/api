@@ -19,14 +19,14 @@ pub fn get_subscriber(
     name: String,
     env_filter: String,
     sink: impl MakeWriter + Send + Sync + 'static,
-    endpoint_url: &String,
+    endpoint_url: &str,
 ) -> impl Subscriber + Sync + Send {
     let tracer = opentelemetry_otlp::new_pipeline()
         .tracing()
         .with_exporter(
             opentelemetry_otlp::new_exporter()
                 .tonic()
-                .with_endpoint(endpoint_url.as_str()),
+                .with_endpoint(endpoint_url),
         )
         .install_batch(opentelemetry::runtime::Tokio)
         .expect("Failed to install tracing pipeline.");
