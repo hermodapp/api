@@ -135,6 +135,27 @@
       "nullable": []
     }
   },
+  "6f12369235e405c43f799c5fff868e70546bb120a085ca0dd9669785b2a310c7": {
+    "query": "\n            DELETE FROM qr_code\n            WHERE id=$1 AND account_id=$2\n            RETURNING true\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "bool",
+          "type_info": "Bool"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid"
+        ]
+      },
+      "nullable": [
+        null
+      ]
+    }
+  },
   "7c0cd8b17014ba712cae5f2b6f7e3947c188201459bf5eeb80464e656cea1c02": {
     "query": "\n        SELECT *\n        FROM account\n        WHERE username = $1\n        ",
     "describe": {
@@ -318,6 +339,29 @@
         false,
         false,
         false
+      ]
+    }
+  },
+  "e873afb77e7c93411956d4dc58229740ce1dfe150770b26ca849896c0f3b50ac": {
+    "query": "\n            UPDATE qr_code\n            SET generation_data=$2, slug=$3\n            WHERE id=$1 AND account_id=$4\n            RETURNING true\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "bool",
+          "type_info": "Bool"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Text",
+          "Text",
+          "Uuid"
+        ]
+      },
+      "nullable": [
+        null
       ]
     }
   }
