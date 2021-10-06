@@ -3,6 +3,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
+    auth::AuthenticationError,
     db::QrCode,
     handlers::{json_response, ApplicationError},
     jwt::JwtClient,
@@ -39,6 +40,86 @@ pub async fn get_qr_code_data(
             "No QR code found with slug {}",
             &query.slug
         )))
+    }
+}
+
+#[derive(Deserialize, Clone)]
+pub struct EditQrCodeRequest {
+    pub id: Uuid,
+    pub generation_data: String,
+    pub slug: String,
+}
+
+#[tracing::instrument(name = "qr_code::edit", skip(pool, query, jwt), fields(username=tracing::field::Empty, user_id=tracing::field::Empty))]
+/// get(/qr_code/edit?id={ID}&generation_data={DATA}&slug={SLUG}) edits a QR code with the relevant information
+pub async fn edit_qr_code(
+    pool: web::Data<PgPool>,
+    query: web::Query<EditQrCodeRequest>,
+    request: HttpRequest,
+    jwt: web::Data<JwtClient>,
+) -> ApplicationResponse {
+    let user = jwt.user_or_403(request).await?;
+    tracing::Span::current().record("username", &tracing::field::display(&user.username));
+    tracing::Span::current().record("user_id", &tracing::field::display(&user.id));
+
+    let query = sqlx::query!(
+        r#"
+            UPDATE qr_code
+            SET generation_data=$2, slug=$3
+            WHERE id=$1 AND account_id=$4
+            RETURNING true
+        "#,
+        query.id,
+        query.generation_data,
+        query.slug,
+        user.id
+    )
+    .fetch_optional(pool.as_ref())
+    .await?;
+
+    if query.is_some() {
+        Ok(HttpResponse::Ok().finish())
+    } else {
+        Err(ApplicationError::AuthError(
+            AuthenticationError::Unauthorized,
+        ))
+    }
+}
+
+#[derive(Deserialize, Clone)]
+pub struct DeleteQrCodeRequest {
+    pub id: Uuid,
+}
+
+#[tracing::instrument(name = "qr_code::delete", skip(pool, query, jwt), fields(username=tracing::field::Empty, user_id=tracing::field::Empty))]
+/// get(/qr_code/delete?id={ID}) edits a QR code with the relevant information
+pub async fn delete_qr_code(
+    pool: web::Data<PgPool>,
+    query: web::Query<EditQrCodeRequest>,
+    request: HttpRequest,
+    jwt: web::Data<JwtClient>,
+) -> ApplicationResponse {
+    let user = jwt.user_or_403(request).await?;
+    tracing::Span::current().record("username", &tracing::field::display(&user.username));
+    tracing::Span::current().record("user_id", &tracing::field::display(&user.id));
+
+    let query = sqlx::query!(
+        r#"
+            DELETE FROM qr_code
+            WHERE id=$1 AND account_id=$2
+            RETURNING true
+        "#,
+        query.id,
+        user.id
+    )
+    .fetch_optional(pool.as_ref())
+    .await?;
+    if query.is_some() {
+        Ok(HttpResponse::Ok().finish())
+    } else {
+        Err(ApplicationError::AuthError(
+            AuthenticationError::Unauthorized,
+        ))
     }
 }
 

@@ -12,8 +12,8 @@ use tracing_actix_web::TracingLogger;
 
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::handlers::{
-    get_form, get_qr_code_data, health_check, list_qr_codes, login, logout, register, store_form,
-    store_qr_code, who_am_i,
+    delete_qr_code, edit_qr_code, get_form, get_qr_code_data, health_check, list_qr_codes, login,
+    logout, register, store_form, store_qr_code, who_am_i,
 };
 use crate::jwt::JwtClient;
 
@@ -104,6 +104,8 @@ fn run(
             .route("/qr_code", web::get().to(get_qr_code_data))
             .route("/qr_codes", web::get().to(list_qr_codes))
             .route("/qr_code/store", web::get().to(store_qr_code))
+            .route("/qr_code/edit", web::get().to(edit_qr_code))
+            .route("/qr_code/delete", web::get().to(delete_qr_code))
             .route("/form", web::get().to(get_form))
             .route("/form/store", web::post().to(store_form))
             .app_data(db_pool.clone())
