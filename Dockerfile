@@ -15,7 +15,7 @@ ENV SQLX_OFFLINE true
 # Build our project
 RUN cargo build --release --bin hermod
 
-FROM debian:buster-slim AS runtime
+FROM debian:bullseye-slim AS runtime
 WORKDIR /app
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends openssl \

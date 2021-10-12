@@ -2,14 +2,8 @@ use std::fmt::Debug;
 use std::str::FromStr;
 
 use anyhow::Context;
-use argon2::password_hash::SaltString;
-use argon2::Algorithm;
-use argon2::Argon2;
-use argon2::Params;
-use argon2::PasswordHasher;
-use argon2::Version;
-use serde::Deserialize;
-use serde::Serialize;
+use argon2::{password_hash::SaltString, Algorithm, Argon2, Params, PasswordHasher, Version};
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
