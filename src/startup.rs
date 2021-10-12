@@ -87,7 +87,7 @@ fn run(
         let cors = Cors::default()
             .allowed_origin_fn(|origin, _req_head| {
                 origin.as_bytes().ends_with(b"hermodapp.com")
-                    || origin.as_bytes().ends_with(b"localhost:3000")
+                    || origin.as_bytes().contains(b"localhost:3000")
             })
             .allowed_methods(vec!["GET", "POST"])
             .supports_credentials()
