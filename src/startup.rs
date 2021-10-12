@@ -84,14 +84,7 @@ fn run(
     let db_pool = Data::new(db_pool);
     let jwt_client = Data::new(jwt_client);
     let server = HttpServer::new(move || {
-        let cors = Cors::default()
-            .allowed_origin_fn(|origin, _req_head| {
-                origin.as_bytes().ends_with(b"hermodapp.com")
-                    || origin.as_bytes().contains(b"localhost:3000")
-            })
-            .allowed_methods(vec!["GET", "POST"])
-            .supports_credentials()
-            .max_age(3600);
+        let cors = Cors::permissive();
 
         App::new()
             .wrap(TracingLogger::default())
