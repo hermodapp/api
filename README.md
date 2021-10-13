@@ -17,6 +17,7 @@ brew cask install docker # Install Docker
 
 # Build and run application
 ./scripts/init_db.sh # Starts and migrates a Postgres database using Docker
+./scripts/init_collector.sh # Starts an Open Telemetry collector using Docker
 cargo +nightly run # Compiles and runs the Hermod project using an edge Rust build (aka cargo r)
 
 ```
