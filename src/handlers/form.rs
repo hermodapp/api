@@ -1,12 +1,13 @@
 use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use tracing::field::Empty;
 use uuid::Uuid;
 
 use super::ApplicationResponse;
 use crate::{db::NewForm, handlers::ApplicationError, jwt::JwtClient};
 
-#[tracing::instrument(name = "form::list", skip(pool, jwt), fields(username=tracing::field::Empty, user_id=tracing::field::Empty))]
+#[tracing::instrument(name = "handlers::form::list", skip(pool, jwt), fields(username=Empty, user_id=Empty))]
 /// get(form/list) runs an SQL query to retrieve all the forms belonging to the user who sent the request
 pub async fn list_forms(
     pool: web::Data<PgPool>,
@@ -50,7 +51,7 @@ pub struct FormGetResponse {
     pub fields: Vec<String>,
 }
 
-#[tracing::instrument(name = "form::get", skip(query, pool))]
+#[tracing::instrument(name = "handlers::form::get", skip(query, pool))]
 /// get(form) runs an SQL query on a provided form id and returns a JSON object of the fields
 pub async fn get_form(
     query: web::Query<FormGetRequest>,
@@ -86,7 +87,7 @@ pub struct FormCreationRequest {
     pub fields: Vec<String>,
 }
 
-#[tracing::instrument(name = "form::store", skip(json, pool, request, jwt), fields(username=tracing::field::Empty, user_id=tracing::field::Empty))]
+#[tracing::instrument(name = "handlers::form::store", skip(json, pool, request, jwt), fields(username=Empty, user_id=Empty))]
 /// post(form/store) runs an SQL query to store a new form and all its associated fields
 pub async fn store_form(
     json: web::Json<FormCreationRequest>,
