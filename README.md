@@ -1,6 +1,4 @@
-# Hermod API 
-[![dependency status](https://deps.rs/repo/github/hermodapp/api/status.svg)](https://deps.rs/repo/github/hermodapp/api)
-[![Rust](https://github.com/hermodapp/api/actions/workflows/general.yml/badge.svg)](https://github.com/hermodapp/api/actions/workflows/general.yml)
+# Hermod API [![dependency status](https://deps.rs/repo/github/hermodapp/api/status.svg)](https://deps.rs/repo/github/hermodapp/api) [![Rust](https://github.com/hermodapp/api/actions/workflows/general.yml/badge.svg)](https://github.com/hermodapp/api/actions/workflows/general.yml)
 ### Running API
 #### Dependencies
 - [Rustup](https://rustup.rs)
