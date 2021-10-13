@@ -43,6 +43,14 @@ impl ResponseError for ApplicationError {
             Self::NotFoundError(_message) => HttpResponse::new(StatusCode::NOT_FOUND),
         }
     }
+
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Self::UnexpectedError(_e) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::AuthError(_e) => StatusCode::UNAUTHORIZED,
+            Self::NotFoundError(_message) => StatusCode::NOT_FOUND,
+        }
+    }
 }
 
 pub fn json_response(data: impl serde::Serialize) -> ApplicationResponse {
