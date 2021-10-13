@@ -10,6 +10,7 @@ use std::net::TcpListener;
 use tracing::log::LevelFilter;
 use tracing_actix_web::TracingLogger;
 
+use crate::clients::twilio::TwilioClient;
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::handlers::{
     delete_qr_code, edit_qr_code, get_form, get_qr_code_data, health_check, list_qr_codes, login,
@@ -35,6 +36,14 @@ impl Application {
             connection_pool.clone(),
         );
 
+        let twilio_client = TwilioClient::new(
+            configuration.twilio.base_url,
+            std::time::Duration::from_secs(5),
+            configuration.twilio.account_sid,
+            configuration.twilio.auth_token,
+            configuration.twilio.from,
+        );
+
         sqlx::migrate!("./migrations")
             .run(&connection_pool)
             .await
@@ -47,7 +56,7 @@ impl Application {
         let listener = TcpListener::bind(&address)?;
         let port = listener.local_addr().unwrap().port();
 
-        let server = run(listener, connection_pool, jwt_client)?;
+        let server = run(listener, connection_pool, jwt_client, twilio_client)?;
 
         Ok(Self { port, server })
     }
@@ -80,9 +89,12 @@ fn run(
     listener: TcpListener,
     db_pool: PgPool,
     jwt_client: JwtClient,
+    twilio_client: TwilioClient,
 ) -> Result<Server, std::io::Error> {
     let db_pool = Data::new(db_pool);
     let jwt_client = Data::new(jwt_client);
+    let twilio_client = Data::new(twilio_client);
+
     let server = HttpServer::new(move || {
         let cors = Cors::permissive();
 
@@ -103,6 +115,7 @@ fn run(
             .route("/form/store", web::post().to(store_form))
             .app_data(db_pool.clone())
             .app_data(jwt_client.clone())
+            .app_data(twilio_client.clone())
     })
     .listen(listener)?
     .run();
