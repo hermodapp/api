@@ -9,6 +9,7 @@
 //! All code in this crate is licensed by the file in the GitHub repo.
 
 pub mod auth;
+pub mod clients;
 pub mod configuration;
 pub mod db;
 pub mod error;

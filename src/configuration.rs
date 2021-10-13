@@ -8,6 +8,7 @@ use std::convert::{TryFrom, TryInto};
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
+    pub twilio: TwilioSettings,
 }
 
 /// Contains settings relevant at the application level.
@@ -19,6 +20,15 @@ pub struct ApplicationSettings {
     pub base_url: String,
     pub jwt_signing_key: String,
     pub honeycomb_url: String,
+}
+
+/// Contains settings relevant at the application level.
+#[derive(serde::Deserialize, Clone)]
+pub struct TwilioSettings {
+    pub account_sid: String,
+    pub auth_token: String,
+    pub base_url: String,
+    pub from: String,
 }
 
 /// Contains settings for the database connection.
