@@ -1,7 +1,6 @@
 //! Contains functions that configure and initialize tracing telemetry, as well as additional helpers.
 use actix_web::rt::task::JoinHandle;
 use opentelemetry_otlp::WithExportConfig;
-// use opentelemetry::trace::Tracer;
 use tracing::subscriber::set_global_default;
 use tracing::Subscriber;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};

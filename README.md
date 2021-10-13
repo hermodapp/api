@@ -49,10 +49,13 @@ TEST_LOG=true cargo t | bunyan # Runs tests with logging, piping output to Bunya
 
 sqlx mig add YOUR_MIGRATION_NAME # Create a new sqlx migration
 sqlx mig run # Run your new migration
-cargo sqlx prepare -- --bin hermod # Rebuild sqlx's cache used for compile-time SQL guarantees
+cargo sqlx prepare -- -lib # Rebuild sqlx's cache used for compile-time SQL guarantees
+cargo sqlx prepare --check -- --lib
 
 docker build -t hermod_api . # Build the release image of the application (will take a *very* long time, Rust has infamously long release compilation times)
 docker run -p 8000:8000 hermod_api # Run the release image of the application
+
+cloc configuration src tests migrations scripts
 ```
 
 
