@@ -185,5 +185,5 @@ async fn registration_request_with_duplicate_username_is_rejected() {
         .await
         .expect("Failed to execute request.");
 
-    assert_eq!(500, response.status().as_u16());
+    assert_eq!(400, response.status().as_u16());
 }

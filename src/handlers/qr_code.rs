@@ -141,7 +141,7 @@ pub async fn store_qr_code(
     tracing::Span::current().record("username", &tracing::field::display(&user.username));
     tracing::Span::current().record("user_id", &tracing::field::display(&user.id));
 
-    sqlx::query!(
+    let sql = sqlx::query!(
         r#"
             INSERT INTO qr_code (id, account_id, slug, generation_data)
             VALUES ($1, $2, $3, $4)"#,
@@ -151,8 +151,18 @@ pub async fn store_qr_code(
         query.generation_data
     )
     .execute(pool.as_ref())
-    .await?;
-    Ok(HttpResponse::Ok().finish())
+    .await;
+
+    match sql {
+        Ok(_) => Ok(HttpResponse::Ok().finish()),
+        Err(sqlx::Error::Database(e)) => match e.constraint() {
+            Some(key) => Err(ApplicationError::MalformedInput(
+                format!("Duplicate key error: {}", key).to_string(),
+            )),
+            _ => Err(ApplicationError::UnexpectedError(anyhow::anyhow!(e))),
+        },
+        Err(e) => Err(ApplicationError::UnexpectedError(anyhow::anyhow!(e))),
+    }
 }
 
 #[derive(serde::Serialize)]

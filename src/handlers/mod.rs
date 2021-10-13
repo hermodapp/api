@@ -22,10 +22,12 @@ pub type ApplicationResponse = Result<HttpResponse, ApplicationError>;
 pub enum ApplicationError {
     #[error("Authentication failed.")]
     AuthError(#[source] AuthenticationError),
-    #[error(transparent)]
-    UnexpectedError(#[from] anyhow::Error),
+    #[error("Malformed user input.")]
+    MalformedInput(String),
     #[error("Not Found")]
     NotFoundError(String),
+    #[error(transparent)]
+    UnexpectedError(#[from] anyhow::Error),
 }
 
 impl ResponseError for ApplicationError {
@@ -41,6 +43,7 @@ impl ResponseError for ApplicationError {
                 response
             }
             Self::NotFoundError(_message) => HttpResponse::new(StatusCode::NOT_FOUND),
+            Self::MalformedInput(_message) => HttpResponse::new(StatusCode::BAD_REQUEST),
         }
     }
 
@@ -49,6 +52,7 @@ impl ResponseError for ApplicationError {
             Self::UnexpectedError(_e) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::AuthError(_e) => StatusCode::UNAUTHORIZED,
             Self::NotFoundError(_message) => StatusCode::NOT_FOUND,
+            Self::MalformedInput(_message) => StatusCode::BAD_REQUEST,
         }
     }
 }

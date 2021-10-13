@@ -4,7 +4,7 @@ use tracing::field::Empty;
 
 use crate::{auth::validate_request_with_basic_auth, db::NewUser, jwt::JwtClient};
 
-use super::ApplicationResponse;
+use super::{ApplicationError, ApplicationResponse};
 
 #[tracing::instrument(name = "handlers::auth::login", skip(request, pool, jwt_client), fields(username=Empty, user_id=Empty))]
 /// Get(/login) attempts to log a user in, and if successful returns a JWT token
@@ -38,10 +38,18 @@ pub async fn register(
     query: web::Form<RegistrationRequest>,
 ) -> ApplicationResponse {
     let new_user = NewUser::new(query.username.clone(), query.password.clone());
-    new_user.store(&pool).await?;
-    tracing::Span::current().record("user_id", &tracing::field::display(&new_user.id));
-
-    Ok(HttpResponse::Ok().body("New user stored.".to_string()))
+    let result = new_user.store(&pool).await;
+    match result {
+        Ok(()) => {
+            tracing::Span::current().record("user_id", &tracing::field::display(&new_user.id));
+            Ok(HttpResponse::Ok().body("New user stored.".to_string()))
+        }
+        Err(_) => {
+            return Err(ApplicationError::MalformedInput(
+                "That username already exists".to_string(),
+            ))
+        }
+    }
 }
 
 #[tracing::instrument(name = "handlers::auth::whoami", skip(request, jwt_client), fields(username=Empty, user_id=Empty))]

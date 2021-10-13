@@ -101,7 +101,17 @@ pub async fn store_form(
     let mut new_form = NewForm::default();
     new_form.qr_code_id = json.qr_code_id;
     new_form.account_id = current_user.id;
-    new_form.store(pool.as_ref()).await?;
+    let sql = new_form.store(pool.as_ref()).await;
+
+    match sql {
+        Ok(_) => {}
+        Err(_) => {
+            // TODO: Improve error handling here...
+            return Err(ApplicationError::MalformedInput(
+                format!("QR code {} no longer exists", new_form.qr_code_id).to_string(),
+            ));
+        }
+    }
 
     // Create a transaction to store each form input
     let mut tx = pool.begin().await?;
