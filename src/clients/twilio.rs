@@ -26,6 +26,7 @@ impl TwilioClient {
         }
     }
 
+    #[tracing::instrument(name = "clients::twilio::send_sms", skip(self))]
     pub async fn send_sms(&self, to: String, message: String) -> Result<(), reqwest::Error> {
         let url = format!("{}Accounts/{}/Messages", self.base_url, &self.account_sid);
         let message = urlencoding::encode(&message);
@@ -42,6 +43,7 @@ impl TwilioClient {
         Ok(())
     }
 
+    #[tracing::instrument(name = "clients::twilio::send_call", skip(self))]
     pub async fn send_call(&self, to: String, message: String) -> Result<(), reqwest::Error> {
         let url = format!("{}Accounts/{}/Calls.json", self.base_url, &self.account_sid);
         let message = urlencoding::encode(&message);

@@ -2,6 +2,7 @@ use actix_web::{web, HttpRequest, HttpResponse};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use super::ApplicationResponse;
 use crate::{
     auth::AuthenticationError,
     db::QrCode,
@@ -9,8 +10,7 @@ use crate::{
     jwt::JwtClient,
 };
 use serde::Deserialize;
-
-use super::ApplicationResponse;
+use tracing::field::Empty;
 
 #[derive(Deserialize)]
 pub struct GetQrCodeRequest {
@@ -22,7 +22,7 @@ pub struct GetQrCodeResponse {
     pub generation_data: String,
 }
 
-#[tracing::instrument(name = "qr_code::get", skip(pool, query))]
+#[tracing::instrument(name = "handlers::qr_code::get", skip(pool, query))]
 /// get(qr_code?slug={SLUG}) runs a sample SQL query and checks if the user is logged in
 pub async fn get_qr_code_data(
     pool: web::Data<PgPool>,
@@ -50,7 +50,7 @@ pub struct EditQrCodeRequest {
     pub slug: String,
 }
 
-#[tracing::instrument(name = "qr_code::edit", skip(pool, query, jwt), fields(username=tracing::field::Empty, user_id=tracing::field::Empty))]
+#[tracing::instrument(name = "handlers::qr_code::edit", skip(pool, query, jwt), fields(username=Empty, user_id=Empty))]
 /// get(/qr_code/edit?id={ID}&generation_data={DATA}&slug={SLUG}) edits a QR code with the relevant information
 pub async fn edit_qr_code(
     pool: web::Data<PgPool>,
@@ -91,7 +91,7 @@ pub struct DeleteQrCodeRequest {
     pub id: Uuid,
 }
 
-#[tracing::instrument(name = "qr_code::delete", skip(pool, query, jwt), fields(username=tracing::field::Empty, user_id=tracing::field::Empty))]
+#[tracing::instrument(name = "handlers::qr_code::delete", skip(pool, query, jwt), fields(username=Empty, user_id=Empty))]
 /// get(/qr_code/delete?id={ID}) edits a QR code with the relevant information
 pub async fn delete_qr_code(
     pool: web::Data<PgPool>,
@@ -129,7 +129,7 @@ pub struct NewQrCodeRequest {
     pub slug: String,
 }
 
-#[tracing::instrument(name = "qr_code::store", skip(pool, query, jwt), fields(username=tracing::field::Empty, user_id=tracing::field::Empty))]
+#[tracing::instrument(name = "hadlers::qr_code::store", skip(pool, query, jwt), fields(username=Empty, user_id=Empty))]
 /// get(/qr_code/store?generation_data={DATA}&slug={SLUG}) stores a QR code with the relevant information
 pub async fn store_qr_code(
     pool: web::Data<PgPool>,
@@ -160,7 +160,7 @@ pub struct ListQrCodesResponse {
     pub qr_codes: Vec<QrCode>,
 }
 
-#[tracing::instrument(name = "qr_code::list", skip(pool, request, jwt))]
+#[tracing::instrument(name = "handlers::qr_code::list", skip(pool, request, jwt))]
 /// get(/qr_codes) lists QR codes assosciated with a given user
 pub async fn list_qr_codes(
     pool: web::Data<PgPool>,
