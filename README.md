@@ -1,14 +1,10 @@
 <div align="center">
   <img src="https://user-images.githubusercontent.com/5386772/137525840-d6703c94-f7d8-4e6a-9435-27380c923dff.png" width="30%"/>
-  <br />
-  <h1>Hermod api</h1>
-
-
- <strong>
+  <h1>Hermod API</h1>
+ <em>
   A platform for instant and seamless customer interaction. 
- </strong>
+ </em>
 </div>
-
 <br />
 
 <div align="center" markdown="1">
@@ -20,8 +16,7 @@
   </a>
 </div>
 
-
-### Running API
+# Running API
 #### Dependencies
 - [Rustup](https://rustup.rs)
 - [psql](https://www.postgresql.org/download/)
@@ -43,13 +38,6 @@ brew cask install docker # Install Docker
 cargo +nightly run # Compiles and runs the Hermod project using an edge Rust build (aka cargo r)
 
 ```
-Additional commands useful for developing in the api project are located
-in the [api folder's README](./api)
-
-# Hermod api
-<!-- test -->
-
-For instructions to run the project, look at the [repo-level README](https://github.com/cs495wifly/hermod).
 
 ## Rust project documentation
 To view the project's auto-generated documentation, run `cargo doc --open` locally, or view 
@@ -82,7 +70,7 @@ cloc configuration src tests migrations scripts
 ```
 
 
-## Project Architecture
+# Project Architecture
 - configurations contains three files - base.yaml, local.yaml, and production.yaml. Base.yaml contains default configuration shared between local and production, and local and production specify configuration settings that differ between the two environments.
 - migrations
 - scripts
