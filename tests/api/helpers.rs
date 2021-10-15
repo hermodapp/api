@@ -1,4 +1,4 @@
-use hermod::{
+use hermod_api::{
     configuration::{get_configuration, DatabaseSettings},
     db::NewUser,
     jwt::JwtClient,

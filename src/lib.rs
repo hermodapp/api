@@ -6,7 +6,10 @@
 //! in each module. For more information about auto-generated Rust documentation,
 //! visit the [rustdoc documentation](https://doc.rust-lang.org/rustdoc/what-is-rustdoc.html).
 //!
-//! All code in this crate is licensed by the file in the GitHub repo.
+//! All code in this crate is MIT licensed.
+#![doc(
+    html_logo_url = "https://user-images.githubusercontent.com/5386772/137547011-0dafef0a-8c82-4b48-924c-d540e504a7f4.png"
+)]
 
 pub mod auth;
 pub mod clients;
