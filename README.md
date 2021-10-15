@@ -27,8 +27,6 @@
 
 #### Installation Instructions for Mac/Linux
 ```bash
-cd api
-
 # Install Rust, psql, and Docker
 brew install rustup postgres # Install Rustup and psql command line tool 
 brew cask install docker # Install Docker
