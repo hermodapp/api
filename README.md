@@ -42,7 +42,7 @@ cargo +nightly run # Compiles and runs the Hermod project using an edge Rust bui
 
 ## Rust project documentation
 To view the project's auto-generated documentation, run `cargo doc --open` locally, or view 
-[the latest version online](https://cs495wifly.github.io/hermod/docs/hermod).
+[the latest version online](https://docs.rs/hermod-api/*/hermod_api/).
 
 ## Useful commands
 ```bash
