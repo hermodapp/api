@@ -1006,7 +1006,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "hermod"
+name = "hermod-api"
 version = "0.1.0"
 dependencies = [
  "actix",
