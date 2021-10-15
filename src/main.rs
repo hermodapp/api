@@ -1,5 +1,5 @@
-use hermod::telemetry::{get_subscriber, init_subscriber};
-use hermod::{configuration::get_configuration, startup::Application};
+use hermod_api::telemetry::{get_subscriber, init_subscriber};
+use hermod_api::{configuration::get_configuration, startup::Application};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
