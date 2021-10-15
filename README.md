@@ -11,9 +11,10 @@
 <a href ="https://deps.rs/repo/github/hermodapp/api" target="_blank"><img src="https://deps.rs/repo/github/hermodapp/api/status.svg" /></a>
 <a href ="https://github.com/hermodapp/api/actions/workflows/general.yml"  target="_blank"><img src="https://github.com/hermodapp/api/actions/workflows/general.yml/badge.svg" /></a>
 <a href="https://hermodapp.github.io/rustdocs/hermodapi/"  target="_blank">
-    <img src="https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square"
+    <img src="https://img.shields.io/badge/docs-latest-blue.svg"
       alt="docs.rs docs" />
   </a>
+    <img src="https://img.shields.io/website-up-down-green-red/https/api.hermodapp.com/health_check" />
 </div>
 
 # Running API
