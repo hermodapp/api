@@ -13,7 +13,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 ENV SQLX_OFFLINE true
 # Build our project
-RUN cargo build --release --bin hermod
+RUN cargo build --release --bin hermod-api
 
 FROM debian:bullseye-slim AS runtime
 WORKDIR /app
