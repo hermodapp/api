@@ -46,7 +46,6 @@ features = [
     "offline"
 ]
 
-
 [dev-dependencies]
 actix-rt = "2.0.2"
 once_cell = "1.7.2"
