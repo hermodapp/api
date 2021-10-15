@@ -1,4 +1,26 @@
-# Hermod API [![dependency status](https://deps.rs/repo/github/hermodapp/api/status.svg)](https://deps.rs/repo/github/hermodapp/api) [![Rust](https://github.com/hermodapp/api/actions/workflows/general.yml/badge.svg)](https://github.com/hermodapp/api/actions/workflows/general.yml)
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/5386772/137525840-d6703c94-f7d8-4e6a-9435-27380c923dff.png" width="30%"/>
+  <br />
+  <h1>Hermod api</h1>
+
+
+ <strong>
+  A platform for instant and seamless customer interaction. 
+ </strong>
+</div>
+
+<br />
+
+<div align="center" markdown="1">
+<a href ="https://deps.rs/repo/github/hermodapp/api" target="_blank"><img src="https://deps.rs/repo/github/hermodapp/api/status.svg" /></a>
+<a href ="https://github.com/hermodapp/api/actions/workflows/general.yml"  target="_blank"><img src="https://github.com/hermodapp/api/actions/workflows/general.yml/badge.svg" /></a>
+<a href="https://hermodapp.github.io/rustdocs/hermodapi/  target="_blank"">
+    <img src="https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square"
+      alt="docs.rs docs" />
+  </a>
+</div>
+
+
 ### Running API
 #### Dependencies
 - [Rustup](https://rustup.rs)
