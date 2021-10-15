@@ -14,7 +14,7 @@
 <div align="center" markdown="1">
 <a href ="https://deps.rs/repo/github/hermodapp/api" target="_blank"><img src="https://deps.rs/repo/github/hermodapp/api/status.svg" /></a>
 <a href ="https://github.com/hermodapp/api/actions/workflows/general.yml"  target="_blank"><img src="https://github.com/hermodapp/api/actions/workflows/general.yml/badge.svg" /></a>
-<a href="https://hermodapp.github.io/rustdocs/hermodapi/  target="_blank"">
+<a href="https://hermodapp.github.io/rustdocs/hermodapi/"  target="_blank">
     <img src="https://img.shields.io/badge/docs-latest-blue.svg?style=flat-square"
       alt="docs.rs docs" />
   </a>
