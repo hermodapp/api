@@ -25,8 +25,6 @@
 - [Rustup](https://rustup.rs)
 - [psql](https://www.postgresql.org/download/)
 - [Docker](https://www.docker.com/get-started)
-- [sqlx (optional)](https://lib.rs/crates/sqlx-cli)
-- [Bunyan (optional)](https://lib.rs/crates/bunyan)
 
 #### Installation Instructions for Mac/Linux
 ```bash
