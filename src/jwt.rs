@@ -59,6 +59,7 @@ impl JwtClient {
         .claims)
     }
 
+    #[tracing::instrument(name = "services::jwt::user_or_403", skip(self, request))]
     pub async fn user_or_403(&self, request: HttpRequest) -> Result<User, ApplicationError> {
         let auth_header = request
             .headers()

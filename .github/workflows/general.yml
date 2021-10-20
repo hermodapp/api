@@ -1,15 +1,9 @@
 name: Rust
 on:
   pull_request:
-    paths:
-      - "/src"
-      - "Cargo.toml"
-      - "/tests"
   push:
-    paths:
-      - "/src"
-      - "Cargo.toml"
-      - "/tests"
+    branches:
+      - main
 
 env:
   CARGO_TERM_COLOR: always
@@ -93,10 +87,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
       - uses: actions-rs/cargo@v1
         with:
           command: check
-          args: check
   clippy:
     name: Clippy
     runs-on: ubuntu-latest

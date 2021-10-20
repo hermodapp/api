@@ -2,15 +2,10 @@ name: Coverage
 
 on:
   pull_request:
-    paths:
-      - "/src"
-      - "Cargo.toml"
-      - "/tests"
   push:
-    paths:
-      - "/src"
-      - "Cargo.toml"
-      - "/tests"
+    branches:
+      - main
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
