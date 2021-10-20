@@ -1,6 +1,14 @@
 //! Contains code neccessary to bootstrap the application and run the server.
 use actix_cors::Cors;
 
+use crate::clients::twilio::TwilioClient;
+use crate::configuration::DatabaseSettings;
+use crate::handlers::{
+    delete_qr_code, edit_qr_code, get_form, get_qr_code_data, health_check, list_qr_codes, login,
+    logout, register, store_form, store_qr_code, who_am_i,
+};
+use crate::jwt::JwtClient;
+use crate::services::configuration::Settings;
 use actix_web::dev::Server;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
@@ -9,14 +17,6 @@ use sqlx::{ConnectOptions, PgPool};
 use std::net::TcpListener;
 use tracing::log::LevelFilter;
 use tracing_actix_web::TracingLogger;
-
-use crate::clients::twilio::TwilioClient;
-use crate::configuration::{DatabaseSettings, Settings};
-use crate::handlers::{
-    delete_qr_code, edit_qr_code, get_form, get_qr_code_data, health_check, list_qr_codes, login,
-    logout, register, store_form, store_qr_code, who_am_i,
-};
-use crate::jwt::JwtClient;
 
 /// Represents the server application.
 pub struct Application {

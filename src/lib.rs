@@ -11,12 +11,10 @@
     html_logo_url = "https://user-images.githubusercontent.com/5386772/137547011-0dafef0a-8c82-4b48-924c-d540e504a7f4.png"
 )]
 
-pub mod auth;
 pub mod clients;
-pub mod configuration;
 pub mod db;
-pub mod error;
 pub mod handlers;
-pub mod jwt;
+pub mod services;
 pub mod startup;
-pub mod telemetry;
+
+pub use services::*;

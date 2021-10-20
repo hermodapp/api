@@ -1,7 +1,7 @@
 use crate::{
-    auth::AuthenticationError,
     db::{get_user_by_id, User},
     handlers::ApplicationError,
+    services::auth::AuthenticationError,
 };
 use actix_web::HttpRequest;
 use chrono::{Duration, Utc};
