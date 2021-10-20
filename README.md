@@ -25,8 +25,7 @@
 - [Rustup](https://rustup.rs)
 - [psql](https://www.postgresql.org/download/)
 - [Docker](https://www.docker.com/get-started)
-- [sqlx (optional)](https://lib.rs/crates/sqlx-cli)
-- [Bunyan (optional)](https://lib.rs/crates/bunyan)
+- [sqlx](https://www.docs.rs/sqlx)
 
 #### Installation Instructions for Mac/Linux
 ```bash
@@ -35,6 +34,7 @@ brew install rustup postgres # Install Rustup and psql command line tool
 brew cask install docker # Install Docker
 
 # Build and run application
+cargo install sqlx-cli # Install sqlx CLI, used by `init_db.sh` to create & migrate database
 ./scripts/init_db.sh # Starts and migrates a Postgres database using Docker
 ./scripts/init_collector.sh # Starts an Open Telemetry collector using Docker
 cargo run # Compiles and runs the Hermod project using an edge Rust build (aka cargo r)
