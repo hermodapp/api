@@ -14,7 +14,10 @@
     <img src="https://img.shields.io/badge/docs-latest-blue.svg"
       alt="docs.rs docs" />
   </a>
-    <img src="https://img.shields.io/website-up-down-green-red/https/api.hermodapp.com/health_check" />
+  <a href="#"><img src="https://img.shields.io/website-up-down-green-red/https/api.hermodapp.com/health_check" /></a>
+  <a href="https://codecov.io/gh/hermodapp/api">
+    <img src="https://codecov.io/gh/hermodapp/api/branch/main/graph/badge.svg?token=KN4LKTZI0X"/>
+  </a>
 </div>
 
 # Running API
@@ -57,7 +60,7 @@ TEST_LOG=true cargo t | bunyan # Runs tests with logging, piping output to Bunya
 
 sqlx mig add YOUR_MIGRATION_NAME # Create a new sqlx migration
 sqlx mig run # Run your new migration
-cargo sqlx prepare -- -lib # Rebuild sqlx's cache used for compile-time SQL guarantees
+cargo sqlx prepare -- --lib # Rebuild sqlx's cache used for compile-time SQL guarantees
 cargo sqlx prepare --check -- --lib
 
 docker build -t hermod_api . # Build the release image of the application (will take a *very* long time, Rust has infamously long release compilation times)
