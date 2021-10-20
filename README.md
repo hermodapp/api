@@ -14,10 +14,11 @@
     <img src="https://img.shields.io/badge/docs-latest-blue.svg"
       alt="docs.rs docs" />
   </a>
-  <a href="#"><img src="https://img.shields.io/website-up-down-green-red/https/api.hermodapp.com/health_check" /></a>
   <a href="https://codecov.io/gh/hermodapp/api">
     <img src="https://codecov.io/gh/hermodapp/api/branch/main/graph/badge.svg?token=KN4LKTZI0X"/>
   </a>
+  <a href="https://www.postman.com/rweas/workspace/hermod/overview"><img src="https://img.shields.io/badge/Postman-4e4e4e?logo=postman" /></a>
+  <a href="#"><img src="https://img.shields.io/website-up-down-green-red/https/api.hermodapp.com/health_check" /></a>
 </div>
 
 # Running API
