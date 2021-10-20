@@ -134,7 +134,7 @@ pub enum AuthenticationError {
 
 impl std::fmt::Debug for AuthenticationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::error::error_chain_fmt(self, f)
+        crate::services::error::error_chain_fmt(self, f)
     }
 }
 
