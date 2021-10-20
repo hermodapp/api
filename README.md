@@ -37,7 +37,10 @@ brew cask install docker # Install Docker
 cargo run # Compiles and runs the Hermod project using an edge Rust build (aka cargo r)
 ```
 
-# Other Useful commands
+<details>
+<summary>Other useful commands</summary>
+
+<!-- readme-long-help:start -->
 ```bash
 # Install optional Rust command-line utilities
 cargo install sqlx-cli # (Optionally) Install sqlx CLI
@@ -63,8 +66,19 @@ docker run -p 8000:8000 hermod_api # Run the release image of the application
 # Print lines-of-code
 brew install cloc
 cloc configuration src tests migrations scripts
-```
 
+# Open LLVM test coverage report
+cargo llvm-cov --open --ignore-filename-regex "build.rs|src\/main.rs"
+
+# Run GCC test coverage report
+cargo tarpaullin
+
+# Raise port limit on macOS
+ulimit -n 10000
+```
+<!-- readme-long-help:end -->
+
+</details>
 
 # Project Architecture
 - configurations contains three files - base.yaml, local.yaml, and production.yaml. Base.yaml contains default configuration shared between local and production, and local and production specify configuration settings that differ between the two environments.
