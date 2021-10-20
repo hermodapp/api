@@ -3,14 +3,14 @@ name: Coverage
 on:
   pull_request:
     paths:
-      - "/src"
-      - "Cargo.toml"
-      - "/tests"
+      - "/src/*"
+      - "/Cargo.toml"
+      - "/tests/*"
   push:
     paths:
-      - "/src"
-      - "Cargo.toml"
-      - "/tests"
+      - "/src/*"
+      - "/Cargo.toml"
+      - "/tests/*"
 jobs:
   coverage:
     runs-on: ubuntu-latest
