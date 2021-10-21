@@ -99,8 +99,8 @@ fn run(
         let cors = Cors::permissive();
 
         App::new()
-            .wrap(TracingLogger::default())
             .wrap(cors)
+            .wrap(TracingLogger::default())
             .route("/login", web::get().to(login))
             .route("/logout", web::get().to(logout))
             .route("/whoami", web::get().to(who_am_i))
