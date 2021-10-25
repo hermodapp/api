@@ -7,6 +7,17 @@ use uuid::Uuid;
 use super::ApplicationResponse;
 use crate::{db::NewForm, handlers::ApplicationError, jwt::JwtClient};
 
+#[derive(Serialize)]
+pub struct ListedFormResponse {
+    pub title: String,
+    pub form_id: Uuid,
+}
+
+#[derive(Serialize)]
+pub struct FormListResponse {
+    pub forms: Vec<ListedFormResponse>,
+}
+
 #[tracing::instrument(name = "handlers::form::list", skip(pool, jwt), fields(username=Empty, user_id=Empty))]
 /// get(form/list) runs an SQL query to retrieve all the forms belonging to the user who sent the request
 pub async fn list_forms(
@@ -15,6 +26,7 @@ pub async fn list_forms(
     jwt: web::Data<JwtClient>,
 ) -> ApplicationResponse {
     let current_user = jwt.user_or_403(request).await?;
+
     let forms = sqlx::query!(
         r#"
             SELECT * FROM form
@@ -23,7 +35,15 @@ pub async fn list_forms(
     )
     .fetch_all(pool.as_ref())
     .await?;
-    Ok(HttpResponse::Ok().body(format!("{:?},", forms)))
+
+    let form_list_response_data = FormListResponse {
+        forms: forms.iter().map(|f| ListedFormResponse {
+            title: String::from(f.title.as_ref().unwrap()),
+            form_id: f.id.clone(), 
+        }).collect(),
+    };
+
+    Ok(HttpResponse::Ok().body(serde_json::to_string(&form_list_response_data).unwrap()))
 }
 
 /*
