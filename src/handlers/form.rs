@@ -48,6 +48,7 @@ pub struct FormGetRequest {
 
 #[derive(Serialize)]
 pub struct FieldGetResponse {
+    pub field_id: Uuid,
     pub caption: String,
     pub r#type: String,
 }
@@ -78,6 +79,7 @@ pub async fn get_form(
         let form_response_data = FormGetResponse {
             title: form.title.unwrap(),
             fields: fields.iter().map(|f| FieldGetResponse{
+                field_id: f.id.clone(),
                 caption: String::from(f.caption.as_ref().unwrap()), 
                 r#type: String::from(&f.r#type),
             }).collect(),
