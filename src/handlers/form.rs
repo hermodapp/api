@@ -3,9 +3,110 @@ use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use tracing::field::Empty;
 use uuid::Uuid;
+use std::collections::HashMap;
 
 use super::ApplicationResponse;
-use crate::{db::NewForm, handlers::ApplicationError, jwt::JwtClient};
+use crate::{db::NewForm, db::NewResponse, db::Response, handlers::ApplicationError, jwt::JwtClient};
+
+#[derive(Debug, Deserialize)]
+pub struct ViewFormQuery {
+    pub id: Option<Uuid>,
+}
+
+#[tracing::instrument(name = "handlers::form::view", skip(pool, query, jwt), fields(username=Empty, user_id=Empty))]
+/// get(form/list) runs an SQL query to retrieve all the forms belonging to the user who sent the request
+pub async fn view_forms(
+    pool: web::Data<PgPool>,
+    request: HttpRequest,
+    query: web::Query<ViewFormQuery>,
+    jwt: web::Data<JwtClient>
+) -> ApplicationResponse {
+    match query.id {
+        Some(form_id) => view_form_responses(pool, request, form_id, jwt).await,
+        None => list_forms(pool, request, jwt).await,
+    }
+}
+
+#[derive(Serialize)]
+pub struct IndividualResponse {
+    form_input_id: Uuid,
+    content: String,
+}
+
+#[derive(Serialize)]
+pub struct ResponseGroup {
+    pub response_id: Uuid,
+    pub replies: Vec<IndividualResponse>,
+}
+
+#[derive(Serialize)]
+pub struct ViewFormResponse {
+    pub questions: HashMap<Uuid, String>,
+    pub responses: Vec<ResponseGroup>,
+}
+
+/// get(form/view) tunnels here if there is a query present in the URL
+/// Runs SQL queries to return responses for the form id given in the query parameter
+pub async fn view_form_responses(
+    pool: web::Data<PgPool>,
+    request: HttpRequest,
+    form_id: Uuid,
+    jwt: web::Data<JwtClient>
+) -> ApplicationResponse {
+    let current_user = jwt.user_or_403(request).await?;
+    
+    let fields = sqlx::query!(
+        r#"SELECT * FROM form_input
+           WHERE form_id = $1"#,
+           form_id
+    ).fetch_all(pool.as_ref())
+    .await?;
+
+    let mut questions: HashMap<Uuid, String> = HashMap::new();
+
+    for field in fields.iter() {
+        questions.insert(field.id.clone(), field.caption.as_ref().unwrap().clone());
+    }
+
+    let responses_data = sqlx::query!(
+        r#"SELECT * FROM response 
+        WHERE form_id = $1"#,
+        form_id
+    )
+    .fetch_all(pool.as_ref())
+    .await?;
+
+    let mut responses: Vec<ResponseGroup> = vec![];
+
+    for response in responses_data.iter() {
+        let replies_data = sqlx::query!(
+            r#"SELECT * FROM feedback
+               WHERE response_id = $1"#,
+               response.id
+        ).fetch_all(pool.as_ref()).await?;
+
+        let mut replies: Vec<IndividualResponse> = vec![];
+
+        for reply in replies_data.iter() {
+            replies.push(IndividualResponse {
+                form_input_id: reply.form_input_id.clone(),
+                content: reply.content.clone()
+            });
+        }
+    
+        responses.push(ResponseGroup {
+            response_id: response.id.clone(),
+            replies
+        });
+    }
+
+    let view_form_responses_data = ViewFormResponse {
+        questions,
+        responses
+    };
+
+    Ok(HttpResponse::Ok().body(serde_json::to_string(&view_form_responses_data).unwrap()))
+}
 
 #[derive(Serialize)]
 pub struct ListedFormResponse {
@@ -18,8 +119,8 @@ pub struct FormListResponse {
     pub forms: Vec<ListedFormResponse>,
 }
 
-#[tracing::instrument(name = "handlers::form::list", skip(pool, jwt), fields(username=Empty, user_id=Empty))]
-/// get(form/list) runs an SQL query to retrieve all the forms belonging to the user who sent the request
+/// get(form/view) tunnels here if no query is present in the URL
+/// Runs an SQL query to retrieve all the forms belonging to the user who sent the request
 pub async fn list_forms(
     pool: web::Data<PgPool>,
     request: HttpRequest,
@@ -163,4 +264,55 @@ pub async fn store_form(
     tx.commit().await?;
 
     Ok(HttpResponse::Ok().body(format!("Stored new form with id {}.", new_form.id)))
+}
+
+#[derive(Deserialize)]
+pub struct FeedbackCreationRequest {
+    pub field_id: Uuid,
+    pub content: String,
+}
+
+#[derive(Deserialize)]
+pub struct ResponseCreationRequest {
+    pub responses: Vec<FeedbackCreationRequest>,
+}
+
+#[derive(Deserialize)]
+pub struct ResponseCreationQuery {
+    pub id: Uuid,
+}
+
+#[tracing::instrument(name = "handlers::form::store_response", skip(query, json, pool), fields(username=Empty, user_id=Empty))]
+/// post(form/submit) runs an SQL query to store a new response and all its associated fields
+pub async fn store_form_response(
+    json: web::Json<ResponseCreationRequest>,
+    pool: web::Data<PgPool>,
+    query: web::Query<ResponseCreationQuery>,
+) -> ApplicationResponse {
+    // Store response first to avoid foreign key constrain
+    let mut new_response = NewResponse::default();
+    new_response.form_id = query.id.clone();
+    new_response.store(pool.as_ref()).await?;
+
+    // Create a transaction to store each form input
+    let mut tx = pool.begin().await?;
+
+    // Queue a SQL query for each form input
+    for response in json.responses.iter() {
+        sqlx::query!(
+            r#"INSERT INTO feedback (id, form_input_id, response_id, content) 
+                VALUES ($1, $2, $3, $4)"#,
+            Uuid::new_v4(),
+            response.field_id.clone(),
+            new_response.id.clone(),
+            response.content.clone()
+        )
+        .execute(&mut tx)
+        .await?;
+    }
+
+    // Commit the transaction
+    tx.commit().await?;
+
+    Ok(HttpResponse::Ok().body(format!("Stored new response with id {}.", new_response.id)))
 }
