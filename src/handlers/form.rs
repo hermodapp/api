@@ -6,7 +6,7 @@ use uuid::Uuid;
 use std::collections::HashMap;
 
 use super::ApplicationResponse;
-use crate::{db::NewForm, db::NewResponse, db::Response, handlers::ApplicationError, jwt::JwtClient};
+use crate::{db::NewForm, db::NewResponse, handlers::ApplicationError, jwt::JwtClient};
 
 #[derive(Debug, Deserialize)]
 pub struct ViewFormQuery {
@@ -53,7 +53,7 @@ pub async fn view_form_responses(
     form_id: Uuid,
     jwt: web::Data<JwtClient>
 ) -> ApplicationResponse {
-    let current_user = jwt.user_or_403(request).await?;
+    let _current_user = jwt.user_or_403(request).await?;
     
     let fields = sqlx::query!(
         r#"SELECT * FROM form_input
@@ -181,7 +181,7 @@ pub struct FormGetResponse {
 }
 
 #[tracing::instrument(name = "handlers::form::get", skip(query, pool))]
-/// get(form) runs an SQL query on a provided form id and returns a JSON object of the fields
+/// get(form/submit) and get(form/edit) runs an SQL query on a provided form id and returns a JSON object of the fields
 pub async fn get_form(
     query: web::Query<FormGetRequest>,
     pool: web::Data<PgPool>,
@@ -278,7 +278,7 @@ pub struct ResponseCreationRequest {
 }
 
 #[derive(Deserialize)]
-pub struct ResponseCreationQuery {
+pub struct FormQuery {
     pub id: Uuid,
 }
 
@@ -287,7 +287,7 @@ pub struct ResponseCreationQuery {
 pub async fn store_form_response(
     json: web::Json<ResponseCreationRequest>,
     pool: web::Data<PgPool>,
-    query: web::Query<ResponseCreationQuery>,
+    query: web::Query<FormQuery>,
 ) -> ApplicationResponse {
     // Store response first to avoid foreign key constrain
     let mut new_response = NewResponse::default();
@@ -315,4 +315,79 @@ pub async fn store_form_response(
     tx.commit().await?;
 
     Ok(HttpResponse::Ok().body(format!("Stored new response with id {}.", new_response.id)))
+}
+
+#[derive(Debug, Deserialize)]
+pub struct FieldEditRequest {
+    field_id: Option<Uuid>,
+    caption: String,
+    r#type: String,
+    delete: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct FormEditRequest {
+    pub title: String,
+    pub fields: Vec<FieldEditRequest>,
+}
+
+#[tracing::instrument(name = "handlers::form::edit", skip(query, json, pool), fields(username=Empty, user_id=Empty))]
+/// post(form/edit) runs an SQL query to edit a form
+pub async fn edit_form(
+    json: web::Json<FormEditRequest>,
+    pool: web::Data<PgPool>,
+    query: web::Query<FormQuery>,
+) -> ApplicationResponse {
+    sqlx::query!(
+        r#"UPDATE form
+           SET title = $1
+           WHERE id = $2"#,
+        json.title,
+        query.id
+    ).fetch_optional(pool.as_ref()).await?;
+
+    let mut tx = pool.begin().await?;
+
+    for edit in json.fields.iter() {
+        match edit.field_id {
+            Some(field_id) => {
+                if edit.delete {
+                    sqlx::query!(
+                        r#"DELETE FROM feedback
+                           WHERE form_input_id = $1"#,
+                        field_id
+                    ).execute(&mut tx).await?;
+
+                    sqlx::query!(
+                        r#"DELETE FROM form_input
+                           WHERE id = $1"#,
+                        field_id
+                    ).execute(&mut tx).await?;
+                } else {
+                    sqlx::query!(
+                        r#"UPDATE form_input
+                           SET caption = $1, type = $2
+                           WHERE id = $3"#,
+                        edit.caption,
+                        edit.r#type,
+                        field_id
+                    ).execute(&mut tx).await?;
+                }
+            },
+            None => {
+                sqlx::query!(
+                    r#"INSERT INTO form_input (id, form_id, type, caption)
+                       VALUES($1, $2, $3, $4)"#,
+                    Uuid::new_v4(),
+                    query.id.clone(),
+                    edit.r#type,
+                    edit.caption
+                ).execute(&mut tx).await?;
+            },
+        };
+    }
+
+    tx.commit().await?;
+
+    Ok(HttpResponse::Ok().body(format!("Successfully edited form with id {}", query.id)))
 }
