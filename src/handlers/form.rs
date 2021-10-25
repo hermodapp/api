@@ -82,13 +82,19 @@ pub async fn get_form(
 }
 
 #[derive(Deserialize)]
+pub struct FieldCreationRequest {
+    pub caption: String,
+    pub r#type: String,
+}
+
+#[derive(Deserialize)]
 pub struct FormCreationRequest {
-    pub qr_code_id: Uuid,
-    pub fields: Vec<String>,
+    pub title: String,
+    pub fields: Vec<FieldCreationRequest>,
 }
 
 #[tracing::instrument(name = "handlers::form::store", skip(json, pool, request, jwt), fields(username=Empty, user_id=Empty))]
-/// post(form/store) runs an SQL query to store a new form and all its associated fields
+/// post(form/new) runs an SQL query to store a new form and all its associated fields
 pub async fn store_form(
     json: web::Json<FormCreationRequest>,
     pool: web::Data<PgPool>,
@@ -99,7 +105,7 @@ pub async fn store_form(
 
     // Store form first to avoid foreign key constrain
     let mut new_form = NewForm::default();
-    new_form.qr_code_id = json.qr_code_id;
+    new_form.title = json.title.clone();
     new_form.account_id = current_user.id;
     new_form.store(pool.as_ref()).await?;
 
@@ -109,11 +115,12 @@ pub async fn store_form(
     // Queue a SQL query for each form input
     for field in json.fields.iter() {
         sqlx::query!(
-            r#"INSERT INTO form_input (id, form_id, type) 
-                VALUES ($1, $2, $3)"#,
+            r#"INSERT INTO form_input (id, form_id, type, caption) 
+                VALUES ($1, $2, $3, $4)"#,
             Uuid::new_v4(),
             new_form.id,
-            field
+            field.r#type.clone(),
+            field.caption.clone()
         )
         .execute(&mut tx)
         .await?;

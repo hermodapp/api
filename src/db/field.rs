@@ -9,6 +9,7 @@ pub struct Field {
     pub id: Uuid,
     pub form_id: Uuid,
     pub field_type: String,
+    pub caption: String,
 }
 
 impl Debug for Field {
@@ -17,6 +18,7 @@ impl Debug for Field {
             .field("id", &self.id)
             .field("form_id", &self.form_id)
             .field("field_type", &self.field_type)
+            .field("caption", &self.caption)
             .finish()
     }
 }
@@ -25,6 +27,7 @@ pub struct NewField {
     pub id: Uuid,
     pub form_id: Uuid,
     pub field_type: String,
+    pub caption: String,
 }
 
 impl NewField {
@@ -32,17 +35,19 @@ impl NewField {
         Self {
             id: Uuid::new_v4(),
             form_id: Uuid::new_v4(),
-            field_type: String::from(""),
+            field_type: String::new(),
+            caption: String::new(),
         }
     }
 
     pub async fn store(&self, pool: &PgPool) -> Result<(), anyhow::Error> {
         sqlx::query!(
-            "INSERT INTO form_input (id, form_id, type)
-             VALUES ($1, $2, $3)",
+            "INSERT INTO form_input (id, form_id, type, caption)
+             VALUES ($1, $2, $3, $4)",
             self.id,
             self.form_id,
             self.field_type,
+            self.caption,
         )
         .execute(pool)
         .await?;

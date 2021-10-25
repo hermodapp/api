@@ -112,7 +112,7 @@ fn run(
             .route("/qr_code/edit", web::get().to(edit_qr_code))
             .route("/qr_code/delete", web::get().to(delete_qr_code))
             .route("/form", web::get().to(get_form))
-            .route("/form/store", web::post().to(store_form))
+            .route("/form/new", web::post().to(store_form))
             .app_data(db_pool.clone())
             .app_data(jwt_client.clone())
             .app_data(twilio_client.clone())
