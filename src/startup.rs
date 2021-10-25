@@ -5,7 +5,7 @@ use crate::clients::twilio::TwilioClient;
 use crate::configuration::DatabaseSettings;
 use crate::handlers::{
     delete_qr_code, edit_qr_code, get_qr_code_data, health_check, list_qr_codes, login,
-    logout, register, store_form, store_qr_code, who_am_i, get_form
+    logout, register, store_form, store_qr_code, who_am_i, get_form, store_form_response
 };
 use crate::jwt::JwtClient;
 use crate::services::configuration::Settings;
@@ -111,8 +111,9 @@ fn run(
             .route("/qr_code/store", web::get().to(store_qr_code))
             .route("/qr_code/edit", web::get().to(edit_qr_code))
             .route("/qr_code/delete", web::get().to(delete_qr_code))
-            .route("/form/submit", web::get().to(get_form))
             .route("/form/new", web::post().to(store_form))
+            .route("/form/submit", web::get().to(get_form))
+            .route("/form/submit", web::post().to(store_form_response))
             .app_data(db_pool.clone())
             .app_data(jwt_client.clone())
             .app_data(twilio_client.clone())

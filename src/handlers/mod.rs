@@ -3,6 +3,7 @@ mod auth;
 mod form;
 mod health_check;
 mod qr_code;
+mod response;
 
 use actix_web::{
     http::{header, HeaderValue, StatusCode},
@@ -12,6 +13,7 @@ pub use auth::*;
 pub use form::*;
 pub use health_check::*;
 pub use qr_code::*;
+pub use response::*;
 
 use crate::auth::AuthenticationError;
 
