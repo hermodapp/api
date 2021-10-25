@@ -1,0 +1,1 @@
+ALTER TABLE feedback RENAME payload TO content;
