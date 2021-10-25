@@ -43,12 +43,19 @@ pub enum FieldType {
 
 #[derive(Deserialize)]
 pub struct FormGetRequest {
-    pub form_id: Uuid,
+    pub id: Uuid,
+}
+
+#[derive(Serialize)]
+pub struct FieldGetResponse {
+    pub caption: String,
+    pub r#type: String,
 }
 
 #[derive(Serialize)]
 pub struct FormGetResponse {
-    pub fields: Vec<String>,
+    pub title: String,
+    pub fields: Vec<FieldGetResponse>,
 }
 
 #[tracing::instrument(name = "handlers::form::get", skip(query, pool))]
@@ -58,7 +65,7 @@ pub async fn get_form(
     pool: web::Data<PgPool>,
 ) -> ApplicationResponse {
     // Validate that such a requested form exists
-    if let Some(form) = sqlx::query!("SELECT * FROM form WHERE id=$1", &query.form_id)
+    if let Some(form) = sqlx::query!("SELECT * FROM form WHERE id=$1", &query.id)
         .fetch_optional(pool.as_ref())
         .await?
     {
@@ -69,14 +76,18 @@ pub async fn get_form(
 
         // Gather field types into a struct
         let form_response_data = FormGetResponse {
-            fields: fields.iter().map(|f| String::from(&f.r#type)).collect(),
+            title: form.title.unwrap(),
+            fields: fields.iter().map(|f| FieldGetResponse{
+                caption: String::from(f.caption.as_ref().unwrap()), 
+                r#type: String::from(&f.r#type),
+            }).collect(),
         };
 
         Ok(HttpResponse::Ok().body(serde_json::to_string(&form_response_data).unwrap()))
     } else {
         Err(ApplicationError::NotFoundError(format!(
             "No form found with id {}.",
-            &query.form_id
+            &query.id
         )))
     }
 }
