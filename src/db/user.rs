@@ -13,7 +13,7 @@ pub struct User {
     pub id: Uuid,
     pub username: String,
     pub password: String,
-    pub email: String,
+    pub email: Option<String>,
 }
 
 impl Debug for User {
@@ -21,7 +21,7 @@ impl Debug for User {
         f.debug_struct("User")
             .field("user_id", &self.id)
             .field("username", &self.username)
-            .field("email", &self.email)
+            .field("email", &self.email.as_ref().unwrap())
             .finish()
     }
 }
@@ -59,7 +59,7 @@ pub struct NewUser {
     pub id: Uuid,
     pub username: String,
     pub password: String,
-    pub email: String,
+    pub email: Option<String>,
 }
 
 impl NewUser {
@@ -69,11 +69,11 @@ impl NewUser {
             id: Uuid::new_v4(),
             username: Uuid::new_v4().to_string(),
             password: Uuid::new_v4().to_string(),
-            email: String::new(),
+            email: None,
         }
     }
 
-    pub fn new(username: String, password: String, email: String) -> Self {
+    pub fn new(username: String, password: String, email: Option<String>) -> Self {
         Self {
             username: username.to_ascii_lowercase(),
             password,

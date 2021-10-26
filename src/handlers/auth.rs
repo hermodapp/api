@@ -34,7 +34,7 @@ pub async fn logout() -> ApplicationResponse {
 pub struct RegistrationRequest {
     pub username: String,
     pub password: String,
-    pub email: String,
+    pub email: Option<String>,
 }
 
 #[tracing::instrument(name = "handlers::auth::register", skip(pool, query), fields(username=%query.username, user_id=Empty))]
@@ -82,11 +82,15 @@ pub async fn forgot_password(
     .fetch_one(pool.as_ref())
     .await?;
 
+    let addr = match user.email {
+        Some(e) => e,
+        None => return Ok(HttpResponse::BadRequest().body("No email found.")),
+    };
     let newfpr = NewForgottenPasswordRequest::new(user.id);
     newfpr.store(pool.as_ref()).await?;
     postmark_client
         .send_email(
-            &user.email,
+            &addr,
             &format!(
                 "http://hermodapp.com/password/reset?id={}\n\n{}",
                 &newfpr.id, &newfpr.id
