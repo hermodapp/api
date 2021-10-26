@@ -113,9 +113,6 @@ pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, a
     let user = sqlx::query_as!(User, "SELECT * FROM account WHERE id=$1", user_id)
         .fetch_one(db_pool)
         .await
-        .context(format!(
-            "Failed to fetch user with user_id {}",
-            user_id.to_string()
-        ))?;
+        .context(format!("Failed to fetch user with user_id {}", user_id))?;
     Ok(user)
 }

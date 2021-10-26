@@ -1,4 +1,4 @@
-//! Contains methods useful for error handling
+//! Contains methods useful for error handling.
 
 /// Writes a chain of error causes to a formatter
 pub fn error_chain_fmt(

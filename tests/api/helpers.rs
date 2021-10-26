@@ -1,9 +1,9 @@
 use hermod_api::{
-    configuration::{get_configuration, DatabaseSettings},
     db::NewUser,
-    jwt::JwtClient,
+    services::configuration::{get_configuration, DatabaseSettings},
+    services::jwt::JwtClient,
+    services::telemetry::{get_subscriber_test, init_subscriber},
     startup::{get_connection_pool, Application},
-    telemetry::{get_subscriber_test, init_subscriber},
 };
 use once_cell::sync::Lazy;
 use reqwest::{Method, Response};
