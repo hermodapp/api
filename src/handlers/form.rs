@@ -331,13 +331,17 @@ pub struct FormEditRequest {
     pub fields: Vec<FieldEditRequest>,
 }
 
-#[tracing::instrument(name = "handlers::form::edit", skip(query, json, pool), fields(username=Empty, user_id=Empty))]
+#[tracing::instrument(name = "handlers::form::edit", skip(query, json, pool, request, jwt), fields(username=Empty, user_id=Empty))]
 /// post(form/edit) runs an SQL query to edit a form
 pub async fn edit_form(
     json: web::Json<FormEditRequest>,
     pool: web::Data<PgPool>,
+    request: HttpRequest,
     query: web::Query<FormQuery>,
+    jwt: web::Data<JwtClient>,
 ) -> ApplicationResponse {
+    let _current_user = jwt.user_or_403(request).await?;
+
     sqlx::query!(
         r#"UPDATE form
            SET title = $1

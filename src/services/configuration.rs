@@ -9,6 +9,7 @@ pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
     pub twilio: TwilioSettings,
+    pub postmark: PostmarkSettings,
 }
 
 /// Contains settings relevant at the application level.
@@ -28,6 +29,13 @@ pub struct TwilioSettings {
     pub account_sid: String,
     pub auth_token: String,
     pub base_url: String,
+    pub from: String,
+}
+
+#[derive(serde::Deserialize, Clone)]
+pub struct PostmarkSettings {
+    pub base_url: String,
+    pub server_auth_token: String,
     pub from: String,
 }
 

@@ -9,6 +9,7 @@ use crate::handlers::{
     store_form_response, view_forms, edit_form
 };
 use crate::jwt::JwtClient;
+use crate::clients::postmark::PostmarkClient;
 use crate::services::configuration::Settings;
 use actix_web::dev::Server;
 use actix_web::web::Data;
@@ -45,6 +46,13 @@ impl Application {
             configuration.twilio.from,
         );
 
+        let postmark_client = PostmarkClient::new(
+            configuration.postmark.base_url,
+            std::time::Duration::from_secs(5),
+            configuration.postmark.server_auth_token,
+            configuration.postmark.from,
+        );
+
         sqlx::migrate!("./migrations")
             .run(&connection_pool)
             .await
@@ -57,7 +65,7 @@ impl Application {
         let listener = TcpListener::bind(&address)?;
         let port = listener.local_addr().unwrap().port();
 
-        let server = run(listener, connection_pool, jwt_client, twilio_client)?;
+        let server = run(listener, connection_pool, jwt_client, twilio_client, postmark_client)?;
 
         Ok(Self { port, server })
     }
@@ -91,10 +99,12 @@ fn run(
     db_pool: PgPool,
     jwt_client: JwtClient,
     twilio_client: TwilioClient,
+    postmark_client: PostmarkClient,
 ) -> Result<Server, std::io::Error> {
     let db_pool = Data::new(db_pool);
     let jwt_client = Data::new(jwt_client);
     let twilio_client = Data::new(twilio_client);
+    let postmark_client = Data::new(postmark_client);
 
     let server = HttpServer::new(move || {
         let cors = Cors::permissive();
@@ -121,6 +131,7 @@ fn run(
             .app_data(db_pool.clone())
             .app_data(jwt_client.clone())
             .app_data(twilio_client.clone())
+            .app_data(postmark_client.clone())
     })
     .listen(listener)?
     .run();
