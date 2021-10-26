@@ -4,8 +4,8 @@ use tracing::field::Empty;
 use uuid::Uuid;
 
 use crate::{
-    auth::validate_request_with_basic_auth, clients::postmark::PostmarkClient,
-    db::NewForgottenPasswordRequest, db::NewUser, db::User, jwt::JwtClient,
+    handlers::auth::validate_request_with_basic_auth, clients::postmark::PostmarkClient,
+    db::NewForgottenPasswordRequest, db::NewUser, db::User, services::jwt::JwtClient,
 };
 
 use super::ApplicationResponse;
@@ -87,7 +87,7 @@ pub async fn forgot_password(
     postmark_client
         .send_email(
             &user.email,
-            &format!("http://hermodapp.com/password/reset?id={}", &newfpr.id),
+            &format!("http://hermodapp.com/password/reset?id={}\n\n{}", &newfpr.id, &newfpr.id),
         )
         .await?;
 

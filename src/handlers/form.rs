@@ -8,7 +8,7 @@ use uuid::Uuid;
 use super::ApplicationResponse;
 use crate::{
     clients::postmark::PostmarkClient, db::NewForm, db::NewResponse, handlers::ApplicationError,
-    jwt::JwtClient,
+    services::jwt::JwtClient,
 };
 
 #[derive(Debug, Deserialize)]
