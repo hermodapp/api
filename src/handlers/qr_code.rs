@@ -4,10 +4,10 @@ use uuid::Uuid;
 
 use super::ApplicationResponse;
 use crate::{
-    auth::AuthenticationError,
     db::QrCode,
     handlers::{json_response, ApplicationError},
-    jwt::JwtClient,
+    services::auth::AuthenticationError,
+    services::jwt::JwtClient,
 };
 use serde::Deserialize;
 use tracing::field::Empty;

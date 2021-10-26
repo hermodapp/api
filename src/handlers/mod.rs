@@ -13,8 +13,9 @@ pub use form::*;
 pub use health_check::*;
 pub use qr_code::*;
 
-use crate::auth::AuthenticationError;
+use crate::services::auth::AuthenticationError;
 
+/// Alias used for all HTTP responses. Uses custom `ApplicationError` error handler.
 pub type ApplicationResponse = Result<HttpResponse, ApplicationError>;
 
 /// Error derived while handling an HTTP request
@@ -45,13 +46,14 @@ impl ResponseError for ApplicationError {
     }
 }
 
+/// Creates an HTTP response with a JSON body constructed from any serializable input
 pub fn json_response(data: impl serde::Serialize) -> ApplicationResponse {
     Ok(HttpResponse::Ok().json(data))
 }
 
 impl std::fmt::Debug for ApplicationError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        crate::error::error_chain_fmt(self, f)
+        crate::services::error::error_chain_fmt(self, f)
     }
 }
 

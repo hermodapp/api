@@ -23,7 +23,7 @@ pub struct ApplicationSettings {
     pub honeycomb_url: String,
 }
 
-/// Contains settings relevant at the application level.
+/// Contains settings for interacting with Twilio's API.
 #[derive(serde::Deserialize, Clone)]
 pub struct TwilioSettings {
     pub account_sid: String,

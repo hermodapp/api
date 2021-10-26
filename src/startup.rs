@@ -3,14 +3,14 @@ use actix_cors::Cors;
 
 use crate::clients::postmark::PostmarkClient;
 use crate::clients::twilio::TwilioClient;
-use crate::configuration::DatabaseSettings;
 use crate::handlers::{
     delete_qr_code, edit_form, edit_qr_code, forgot_password, get_form, get_qr_code_data,
     health_check, list_qr_codes, login, logout, register, reset_password, store_form,
     store_form_response, store_qr_code, test_email, view_forms, who_am_i,
 };
-use crate::jwt::JwtClient;
+use crate::services::configuration::DatabaseSettings;
 use crate::services::configuration::Settings;
+use crate::services::jwt::JwtClient;
 use actix_web::dev::Server;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};

@@ -16,5 +16,3 @@ pub mod db;
 pub mod handlers;
 pub mod services;
 pub mod startup;
-
-pub use services::*;
