@@ -5,4 +5,4 @@ application:
 database:
   require_ssl: true
 email_client:
-  base_url: "https://api.postmarkapp.com"
+  base_url: "https://api.postmarkapp.com/"

@@ -5,49 +5,39 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 #[derive(sqlx::FromRow, Serialize, Deserialize, Clone)]
-pub struct Field {
+pub struct Response {
     pub id: Uuid,
     pub form_id: Uuid,
-    pub field_type: String,
-    pub caption: String,
 }
 
-impl Debug for Field {
+impl Debug for Response {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Field")
+        f.debug_struct("Response")
             .field("id", &self.id)
             .field("form_id", &self.form_id)
-            .field("field_type", &self.field_type)
-            .field("caption", &self.caption)
             .finish()
     }
 }
 
-pub struct NewField {
+pub struct NewResponse {
     pub id: Uuid,
     pub form_id: Uuid,
-    pub field_type: String,
-    pub caption: String,
 }
 
-impl NewField {
+impl NewResponse {
     pub fn default() -> Self {
         Self {
             id: Uuid::new_v4(),
             form_id: Uuid::new_v4(),
-            field_type: String::new(),
-            caption: String::new(),
         }
     }
 
     pub async fn store(&self, pool: &PgPool) -> Result<(), anyhow::Error> {
         sqlx::query!(
-            "INSERT INTO form_input (id, form_id, type, caption)
-             VALUES ($1, $2, $3, $4)",
+            "INSERT INTO response (id, form_id)
+             VALUES ($1, $2)",
             self.id,
             self.form_id,
-            self.field_type,
-            self.caption,
         )
         .execute(pool)
         .await?;

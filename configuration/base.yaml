@@ -9,13 +9,13 @@ database:
   password: "password"
   database_name: "hermod"
   require_ssl: false
-email_client:
-  base_url: "localhost"
-  sender_email: "test@gmail.com"
-  authorization_token: "my-secret-token"
-  timeout_milliseconds: 10000
 twilio:
   account_sid: "DO_NOT_USE"
   auth_token: "DO_NOT_USE"
   base_url: "https://api.twilio.com/2010-04-01/"
   from: "+15078892204"
+postmark:
+  server_auth_token: "DO_NOT_USE"
+  base_url: "https://api.postmarkapp.com/"
+  from: "DO_NOT_USE"
+

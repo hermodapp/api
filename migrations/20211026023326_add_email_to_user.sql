@@ -1,0 +1,2 @@
+ALTER TABLE account
+ADD email VARCHAR(320);

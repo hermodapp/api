@@ -1,10 +1,12 @@
 //! Contains code neccessary to bootstrap the application and run the server.
 use actix_cors::Cors;
 
+use crate::clients::postmark::PostmarkClient;
 use crate::clients::twilio::TwilioClient;
 use crate::handlers::{
-    delete_qr_code, edit_qr_code, get_form, get_qr_code_data, health_check, list_qr_codes, login,
-    logout, register, store_form, store_qr_code, who_am_i,
+    delete_qr_code, edit_form, edit_qr_code, forgot_password, get_form, get_qr_code_data,
+    health_check, list_qr_codes, login, logout, register, reset_password, store_form,
+    store_form_response, store_qr_code, test_email, view_forms, who_am_i,
 };
 use crate::services::configuration::DatabaseSettings;
 use crate::services::configuration::Settings;
@@ -44,6 +46,13 @@ impl Application {
             configuration.twilio.from,
         );
 
+        let postmark_client = PostmarkClient::new(
+            configuration.postmark.base_url,
+            std::time::Duration::from_secs(5),
+            configuration.postmark.server_auth_token,
+            configuration.postmark.from,
+        );
+
         sqlx::migrate!("./migrations")
             .run(&connection_pool)
             .await
@@ -56,7 +65,13 @@ impl Application {
         let listener = TcpListener::bind(&address)?;
         let port = listener.local_addr().unwrap().port();
 
-        let server = run(listener, connection_pool, jwt_client, twilio_client)?;
+        let server = run(
+            listener,
+            connection_pool,
+            jwt_client,
+            twilio_client,
+            postmark_client,
+        )?;
 
         Ok(Self { port, server })
     }
@@ -90,10 +105,12 @@ fn run(
     db_pool: PgPool,
     jwt_client: JwtClient,
     twilio_client: TwilioClient,
+    postmark_client: PostmarkClient,
 ) -> Result<Server, std::io::Error> {
     let db_pool = Data::new(db_pool);
     let jwt_client = Data::new(jwt_client);
     let twilio_client = Data::new(twilio_client);
+    let postmark_client = Data::new(postmark_client);
 
     let server = HttpServer::new(move || {
         let cors = Cors::permissive();
@@ -105,17 +122,25 @@ fn run(
             .route("/logout", web::get().to(logout))
             .route("/whoami", web::get().to(who_am_i))
             .route("/register", web::post().to(register))
+            .route("/password/forgot", web::post().to(forgot_password))
+            .route("/password/reset", web::post().to(reset_password))
             .route("/health_check", web::get().to(health_check))
             .route("/qr_code", web::get().to(get_qr_code_data))
             .route("/qr_codes", web::get().to(list_qr_codes))
             .route("/qr_code/store", web::get().to(store_qr_code))
             .route("/qr_code/edit", web::get().to(edit_qr_code))
             .route("/qr_code/delete", web::get().to(delete_qr_code))
-            .route("/form", web::get().to(get_form))
-            .route("/form/store", web::post().to(store_form))
+            .route("/form/new", web::post().to(store_form))
+            .route("/form/submit", web::get().to(get_form))
+            .route("/form/submit", web::post().to(store_form_response))
+            .route("/form/view", web::get().to(view_forms))
+            .route("/form/edit", web::get().to(get_form))
+            .route("/form/edit", web::post().to(edit_form))
+            .route("/form/test", web::get().to(test_email))
             .app_data(db_pool.clone())
             .app_data(jwt_client.clone())
             .app_data(twilio_client.clone())
+            .app_data(postmark_client.clone())
     })
     .listen(listener)?
     .run();

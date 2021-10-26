@@ -68,3 +68,9 @@ impl From<serde_json::Error> for ApplicationError {
         Self::UnexpectedError(anyhow::anyhow!(e))
     }
 }
+
+impl From<reqwest::Error> for ApplicationError {
+    fn from(e: reqwest::Error) -> Self {
+        Self::UnexpectedError(anyhow::anyhow!(e))
+    }
+}

@@ -13,6 +13,7 @@ pub struct User {
     pub id: Uuid,
     pub username: String,
     pub password: String,
+    pub email: String,
 }
 
 impl Debug for User {
@@ -20,7 +21,36 @@ impl Debug for User {
         f.debug_struct("User")
             .field("user_id", &self.id)
             .field("username", &self.username)
+            .field("email", &self.email)
             .finish()
+    }
+}
+
+impl User {
+    pub async fn change_password(
+        &self,
+        pool: &PgPool,
+        new_password: &str,
+    ) -> Result<(), anyhow::Error> {
+        let salt = SaltString::generate(&mut rand::thread_rng());
+        // Match production parameters
+        let password_hash = Argon2::new(
+            Algorithm::Argon2id,
+            Version::V0x13,
+            Params::new(15000, 2, 1, None)?,
+        )
+        .hash_password(new_password.as_bytes(), &salt)?
+        .to_string();
+        sqlx::query!(
+            "UPDATE account
+             SET password = $1
+             WHERE id = $2",
+            password_hash,
+            self.id,
+        )
+        .execute(pool)
+        .await?;
+        Ok(())
     }
 }
 
@@ -29,6 +59,7 @@ pub struct NewUser {
     pub id: Uuid,
     pub username: String,
     pub password: String,
+    pub email: String,
 }
 
 impl NewUser {
@@ -38,13 +69,15 @@ impl NewUser {
             id: Uuid::new_v4(),
             username: Uuid::new_v4().to_string(),
             password: Uuid::new_v4().to_string(),
+            email: String::new(),
         }
     }
 
-    pub fn new(username: String, password: String) -> Self {
+    pub fn new(username: String, password: String, email: String) -> Self {
         Self {
             username: username.to_ascii_lowercase(),
             password,
+            email,
             ..Self::default()
         }
     }
@@ -61,11 +94,12 @@ impl NewUser {
         .hash_password(self.password.as_bytes(), &salt)?
         .to_string();
         sqlx::query!(
-            "INSERT INTO account (id, username, password)
-            VALUES ($1, $2, $3)",
+            "INSERT INTO account (id, username, password, email)
+            VALUES ($1, $2, $3, $4)",
             self.id,
             self.username.to_lowercase(),
             password_hash,
+            self.email,
         )
         .execute(pool)
         .await?;
