@@ -81,7 +81,7 @@ pub async fn get_user_by_id(user_id: String, db_pool: &PgPool) -> Result<User, a
         .await
         .context(format!(
             "Failed to fetch user with user_id {}",
-            user_id.to_string()
+            user_id
         ))?;
     Ok(user)
 }
