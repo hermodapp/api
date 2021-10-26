@@ -1,6 +1,6 @@
+use reqwest::Client;
 use serde::Serialize;
 use std::collections::HashMap;
-use reqwest::Client;
 
 #[derive(Serialize)]
 pub enum EmailBody<'request> {
@@ -29,7 +29,7 @@ pub struct EmailJson<'client, 'request> {
 
 impl<'client, 'request> EmailJson<'client, 'request> {
     pub fn new(to: &'request str, from: &'client str, text_body: &'request str) -> Self {
-        return Self {
+        Self {
             from,
             to,
             cc: None,

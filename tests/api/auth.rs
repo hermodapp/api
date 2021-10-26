@@ -142,7 +142,7 @@ async fn registration_request_with_valid_credentials_is_accepted() {
     let response = client
         .post(format!("{}/register", app.address))
         .header("Content-Type", "application/x-www-form-urlencoded")
-        .body("username=russ&password=russ")
+        .body("username=russ&password=russ&email=russ@russ.com")
         .send()
         .await
         .expect("Failed to execute request.");
@@ -174,7 +174,7 @@ async fn registration_request_with_malformed_input_is_rejected() {
 async fn registration_request_with_duplicate_username_is_rejected() {
     let app = spawn_app().await;
     let username = app.test_user.username.to_string();
-    let body = format!("username={}&password=russ", username);
+    let body = format!("username={}&password=russ&email=russ@russ.com", username);
 
     let client = reqwest::Client::new();
     let response = client

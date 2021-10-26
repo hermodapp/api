@@ -3,7 +3,10 @@ use sqlx::PgPool;
 use tracing::field::Empty;
 use uuid::Uuid;
 
-use crate::{auth::validate_request_with_basic_auth, db::NewUser, db::User, db::NewForgottenPasswordRequest, jwt::JwtClient, clients::postmark::PostmarkClient};
+use crate::{
+    auth::validate_request_with_basic_auth, clients::postmark::PostmarkClient,
+    db::NewForgottenPasswordRequest, db::NewUser, db::User, jwt::JwtClient,
+};
 
 use super::ApplicationResponse;
 
@@ -39,7 +42,11 @@ pub async fn register(
     pool: web::Data<PgPool>,
     query: web::Form<RegistrationRequest>,
 ) -> ApplicationResponse {
-    let new_user = NewUser::new(query.username.clone(), query.password.clone(), query.email.clone());
+    let new_user = NewUser::new(
+        query.username.clone(),
+        query.password.clone(),
+        query.email.clone(),
+    );
     new_user.store(&pool).await?;
     tracing::Span::current().record("user_id", &tracing::field::display(&new_user.id));
 
@@ -60,10 +67,9 @@ pub struct ForgottenPasswordQuery {
     pub username: String,
 }
 
-#[tracing::instrument(name = "handlers::auth::forgot_password", skip(postmark_client, request, pool), fields(username=Empty, user_id=Empty))]
+#[tracing::instrument(name = "handlers::auth::forgot_password", skip(postmark_client, pool), fields(username=Empty, user_id=Empty))]
 /// get(/password/forgot) lets a user request a password reset link to their e-mail.
 pub async fn forgot_password(
-    request: web::HttpRequest,
     pool: web::Data<PgPool>,
     query: web::Query<ForgottenPasswordQuery>,
     postmark_client: web::Data<PostmarkClient>,
@@ -72,13 +78,23 @@ pub async fn forgot_password(
         r#"SELECT * FROM account
            WHERE username = $1"#,
         query.username
-    ).fetch_one(pool.as_ref()).await?;
+    )
+    .fetch_one(pool.as_ref())
+    .await?;
 
     let newfpr = NewForgottenPasswordRequest::new(user.id);
     newfpr.store(pool.as_ref()).await?;
-    postmark_client.send_email(&user.email, &format!("http://hermodapp.com/password/reset?id={}", &newfpr.id)).await?;
+    postmark_client
+        .send_email(
+            &user.email,
+            &format!("http://hermodapp.com/password/reset?id={}", &newfpr.id),
+        )
+        .await?;
 
-    Ok(HttpResponse::Ok().body(format!("Successfully generated forgotten password request for user {}.", query.username)))
+    Ok(HttpResponse::Ok().body(format!(
+        "Successfully generated forgotten password request for user {}.",
+        query.username
+    )))
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -91,10 +107,9 @@ pub struct ResetPasswordRequest {
     pub new_password: String,
 }
 
-#[tracing::instrument(name = "handlers::auth::reset_password", skip(query, json, request, pool), fields(username=Empty, user_id=Empty))]
+#[tracing::instrument(name = "handlers::auth::reset_password", skip(query, json, pool), fields(username=Empty, user_id=Empty))]
 /// get(/password/reset) lets a user reset their password.
 pub async fn reset_password(
-    request: web::HttpRequest,
     pool: web::Data<PgPool>,
     query: web::Query<ResetPasswordQuery>,
     json: web::Json<ResetPasswordRequest>,
@@ -102,15 +117,24 @@ pub async fn reset_password(
     let forgotten_password_request = sqlx::query!(
         "SELECT * FROM forgotten_password_request
          WHERE id = $1",
-         query.id
-    ).fetch_one(pool.as_ref()).await?;
+        query.id
+    )
+    .fetch_one(pool.as_ref())
+    .await?;
 
-    let user = sqlx::query_as!(User, 
+    let user = sqlx::query_as!(
+        User,
         "SELECT * FROM account
          WHERE id = $1",
-        forgotten_password_request.account_id).fetch_one(pool.as_ref()).await?;
+        forgotten_password_request.account_id
+    )
+    .fetch_one(pool.as_ref())
+    .await?;
 
     user.change_password(&pool, &json.new_password).await?;
 
-    Ok(HttpResponse::Ok().body(format!("Successfully reset password for user {}.", user.username)))
+    Ok(HttpResponse::Ok().body(format!(
+        "Successfully reset password for user {}.",
+        user.username
+    )))
 }

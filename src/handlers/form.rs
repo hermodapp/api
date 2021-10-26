@@ -1,12 +1,15 @@
 use actix_web::{web, HttpRequest, HttpResponse};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use std::collections::HashMap;
 use tracing::field::Empty;
 use uuid::Uuid;
-use std::collections::HashMap;
 
 use super::ApplicationResponse;
-use crate::{db::NewForm, db::NewResponse, handlers::ApplicationError, jwt::JwtClient, clients::postmark::PostmarkClient};
+use crate::{
+    clients::postmark::PostmarkClient, db::NewForm, db::NewResponse, handlers::ApplicationError,
+    jwt::JwtClient,
+};
 
 #[derive(Debug, Deserialize)]
 pub struct ViewFormQuery {
@@ -19,7 +22,7 @@ pub async fn view_forms(
     pool: web::Data<PgPool>,
     request: HttpRequest,
     query: web::Query<ViewFormQuery>,
-    jwt: web::Data<JwtClient>
+    jwt: web::Data<JwtClient>,
 ) -> ApplicationResponse {
     match query.id {
         Some(form_id) => view_form_responses(pool, request, form_id, jwt).await,
@@ -51,21 +54,22 @@ pub async fn view_form_responses(
     pool: web::Data<PgPool>,
     request: HttpRequest,
     form_id: Uuid,
-    jwt: web::Data<JwtClient>
+    jwt: web::Data<JwtClient>,
 ) -> ApplicationResponse {
     let _current_user = jwt.user_or_403(request).await?;
-    
+
     let fields = sqlx::query!(
         r#"SELECT * FROM form_input
            WHERE form_id = $1"#,
-           form_id
-    ).fetch_all(pool.as_ref())
+        form_id
+    )
+    .fetch_all(pool.as_ref())
     .await?;
 
     let mut questions: HashMap<Uuid, String> = HashMap::new();
 
     for field in fields.iter() {
-        questions.insert(field.id.clone(), field.caption.as_ref().unwrap().clone());
+        questions.insert(field.id, field.caption.as_ref().unwrap().clone());
     }
 
     let responses_data = sqlx::query!(
@@ -82,27 +86,29 @@ pub async fn view_form_responses(
         let replies_data = sqlx::query!(
             r#"SELECT * FROM feedback
                WHERE response_id = $1"#,
-               response.id
-        ).fetch_all(pool.as_ref()).await?;
+            response.id
+        )
+        .fetch_all(pool.as_ref())
+        .await?;
 
         let mut replies: Vec<IndividualResponse> = vec![];
 
         for reply in replies_data.iter() {
             replies.push(IndividualResponse {
-                form_input_id: reply.form_input_id.clone(),
-                content: reply.content.clone()
+                form_input_id: reply.form_input_id,
+                content: reply.content.clone(),
             });
         }
-    
+
         responses.push(ResponseGroup {
-            response_id: response.id.clone(),
-            replies
+            response_id: response.id,
+            replies,
         });
     }
 
     let view_form_responses_data = ViewFormResponse {
         questions,
-        responses
+        responses,
     };
 
     Ok(HttpResponse::Ok().body(serde_json::to_string(&view_form_responses_data).unwrap()))
@@ -138,10 +144,13 @@ pub async fn list_forms(
     .await?;
 
     let form_list_response_data = FormListResponse {
-        forms: forms.iter().map(|f| ListedFormResponse {
-            title: String::from(f.title.as_ref().unwrap()),
-            form_id: f.id.clone(), 
-        }).collect(),
+        forms: forms
+            .iter()
+            .map(|f| ListedFormResponse {
+                title: String::from(f.title.as_ref().unwrap()),
+                form_id: f.id,
+            })
+            .collect(),
     };
 
     Ok(HttpResponse::Ok().body(serde_json::to_string(&form_list_response_data).unwrap()))
@@ -199,11 +208,14 @@ pub async fn get_form(
         // Gather field types into a struct
         let form_response_data = FormGetResponse {
             title: form.title.unwrap(),
-            fields: fields.iter().map(|f| FieldGetResponse{
-                field_id: f.id.clone(),
-                caption: String::from(f.caption.as_ref().unwrap()), 
-                r#type: String::from(&f.r#type),
-            }).collect(),
+            fields: fields
+                .iter()
+                .map(|f| FieldGetResponse {
+                    field_id: f.id,
+                    caption: String::from(f.caption.as_ref().unwrap()),
+                    r#type: String::from(&f.r#type),
+                })
+                .collect(),
         };
 
         Ok(HttpResponse::Ok().body(serde_json::to_string(&form_response_data).unwrap()))
@@ -291,7 +303,7 @@ pub async fn store_form_response(
 ) -> ApplicationResponse {
     // Store response first to avoid foreign key constrain
     let mut new_response = NewResponse::default();
-    new_response.form_id = query.id.clone();
+    new_response.form_id = query.id;
     new_response.store(pool.as_ref()).await?;
 
     // Create a transaction to store each form input
@@ -348,7 +360,9 @@ pub async fn edit_form(
            WHERE id = $2"#,
         json.title,
         query.id
-    ).fetch_optional(pool.as_ref()).await?;
+    )
+    .fetch_optional(pool.as_ref())
+    .await?;
 
     let mut tx = pool.begin().await?;
 
@@ -360,13 +374,17 @@ pub async fn edit_form(
                         r#"DELETE FROM feedback
                            WHERE form_input_id = $1"#,
                         field_id
-                    ).execute(&mut tx).await?;
+                    )
+                    .execute(&mut tx)
+                    .await?;
 
                     sqlx::query!(
                         r#"DELETE FROM form_input
                            WHERE id = $1"#,
                         field_id
-                    ).execute(&mut tx).await?;
+                    )
+                    .execute(&mut tx)
+                    .await?;
                 } else {
                     sqlx::query!(
                         r#"UPDATE form_input
@@ -375,9 +393,11 @@ pub async fn edit_form(
                         edit.caption,
                         edit.r#type,
                         field_id
-                    ).execute(&mut tx).await?;
+                    )
+                    .execute(&mut tx)
+                    .await?;
                 }
-            },
+            }
             None => {
                 sqlx::query!(
                     r#"INSERT INTO form_input (id, form_id, type, caption)
@@ -386,8 +406,10 @@ pub async fn edit_form(
                     query.id.clone(),
                     edit.r#type,
                     edit.caption
-                ).execute(&mut tx).await?;
-            },
+                )
+                .execute(&mut tx)
+                .await?;
+            }
         };
     }
 
@@ -398,9 +420,9 @@ pub async fn edit_form(
 
 #[tracing::instrument(name = "handlers::form::test_email", skip(postmark_client))]
 /// post(form/edit) runs an SQL query to edit a form
-pub async fn test_email(
-    postmark_client: web::Data<PostmarkClient>,
-) -> ApplicationResponse {
-    postmark_client.send_email("japence@crimson.ua.edu", "Hello, Postmark!").await?;
-    Ok(HttpResponse::Ok().body(format!("E-mail request made to Postmark")))
+pub async fn test_email(postmark_client: web::Data<PostmarkClient>) -> ApplicationResponse {
+    postmark_client
+        .send_email("japence@crimson.ua.edu", "Hello, Postmark!")
+        .await?;
+    Ok(HttpResponse::Ok().body("E-mail request made to Postmark".to_string()))
 }

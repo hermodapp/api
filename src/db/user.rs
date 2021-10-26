@@ -27,7 +27,11 @@ impl Debug for User {
 }
 
 impl User {
-    pub async fn change_password(&self, pool: &PgPool, new_password: &str) -> Result<(), anyhow::Error> {
+    pub async fn change_password(
+        &self,
+        pool: &PgPool,
+        new_password: &str,
+    ) -> Result<(), anyhow::Error> {
         let salt = SaltString::generate(&mut rand::thread_rng());
         // Match production parameters
         let password_hash = Argon2::new(

@@ -45,7 +45,6 @@ impl ResponseError for ApplicationError {
     }
 }
 
-
 pub fn json_response(data: impl serde::Serialize) -> ApplicationResponse {
     Ok(HttpResponse::Ok().json(data))
 }

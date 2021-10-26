@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
+use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
-use chrono::{Utc, NaiveDateTime};
 use sqlx::PgPool;
 use uuid::Uuid;
 
