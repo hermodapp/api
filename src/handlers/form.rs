@@ -5,7 +5,7 @@ use tracing::field::Empty;
 use uuid::Uuid;
 
 use super::ApplicationResponse;
-use crate::{db::NewForm, handlers::ApplicationError, jwt::JwtClient};
+use crate::{db::NewForm, handlers::ApplicationError, services::jwt::JwtClient};
 
 #[tracing::instrument(name = "handlers::form::list", skip(pool, jwt), fields(username=Empty, user_id=Empty))]
 /// get(form/list) runs an SQL query to retrieve all the forms belonging to the user who sent the request

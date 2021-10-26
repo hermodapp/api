@@ -1,5 +1,7 @@
+//! Contains everything required for interacting with Twilio's API
 use reqwest::Client;
 
+/// Client for sending SMS messages and phone calls
 pub struct TwilioClient {
     http_client: Client,
     base_url: String,
@@ -9,6 +11,7 @@ pub struct TwilioClient {
 }
 
 impl TwilioClient {
+    /// Create a new Twilio client
     pub fn new(
         base_url: String,
         timeout: std::time::Duration,
@@ -26,6 +29,7 @@ impl TwilioClient {
         }
     }
 
+    /// Send an SMS message using Twilio's API
     #[tracing::instrument(name = "clients::twilio::send_sms", skip(self))]
     pub async fn send_sms(&self, to: String, message: String) -> Result<(), reqwest::Error> {
         let url = format!("{}Accounts/{}/Messages", self.base_url, &self.account_sid);
@@ -43,6 +47,7 @@ impl TwilioClient {
         Ok(())
     }
 
+    /// Send a phone call using Twilio's API
     #[tracing::instrument(name = "clients::twilio::send_call", skip(self))]
     pub async fn send_call(&self, to: String, message: String) -> Result<(), reqwest::Error> {
         let url = format!("{}Accounts/{}/Calls.json", self.base_url, &self.account_sid);

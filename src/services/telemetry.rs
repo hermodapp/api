@@ -42,6 +42,7 @@ pub fn get_subscriber(
         .with(telemetry)
 }
 
+/// Creates a subscriber that dumps traces into a sink. Used for automated testing.
 pub fn get_subscriber_test(
     name: String,
     env_filter: String,

@@ -2,13 +2,13 @@
 use actix_cors::Cors;
 
 use crate::clients::twilio::TwilioClient;
-use crate::configuration::DatabaseSettings;
 use crate::handlers::{
     delete_qr_code, edit_qr_code, get_form, get_qr_code_data, health_check, list_qr_codes, login,
     logout, register, store_form, store_qr_code, who_am_i,
 };
-use crate::jwt::JwtClient;
+use crate::services::configuration::DatabaseSettings;
 use crate::services::configuration::Settings;
+use crate::services::jwt::JwtClient;
 use actix_web::dev::Server;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};

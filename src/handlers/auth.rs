@@ -2,7 +2,9 @@ use actix_web::{web, HttpRequest, HttpResponse};
 use sqlx::PgPool;
 use tracing::field::Empty;
 
-use crate::{auth::validate_request_with_basic_auth, db::NewUser, jwt::JwtClient};
+use crate::{
+    db::NewUser, services::auth::validate_request_with_basic_auth, services::jwt::JwtClient,
+};
 
 use super::ApplicationResponse;
 

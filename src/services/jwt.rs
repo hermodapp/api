@@ -1,3 +1,4 @@
+//! Contains code for serializing and deserializng JSON Web Tokens.
 use crate::{
     db::{get_user_by_id, User},
     handlers::ApplicationError,
@@ -9,21 +10,25 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 use sqlx::PgPool;
 use uuid::Uuid;
 
+/// Service to manage JWT tokens
 pub struct JwtClient {
     auth_key: String,
     pool: PgPool,
 }
 
 impl JwtClient {
+    /// Create a new JWT Client
     pub fn new(auth_key: String, pool: PgPool) -> Self {
         Self { auth_key, pool }
     }
 
+    /// Encode a JWT token for the given user
     #[tracing::instrument(name = "services::jwt::encode_token", skip(self))]
     pub fn encode_token(&self, user_id: Uuid) -> Result<String, AuthenticationError> {
         Ok(self.encode_token_with_exp(user_id, 60 * 60)?)
     }
 
+    /// Encode a JWT token with a custom expiration time
     #[tracing::instrument(name = "services::jwt::encode_token_with_exp", skip(self))]
     pub fn encode_token_with_exp(
         &self,
@@ -49,6 +54,7 @@ impl JwtClient {
         )?)
     }
 
+    /// Decode a JWT token and provide its claims if it is valid
     #[tracing::instrument(name = "services::jwt::decode_token", skip(self))]
     pub fn decode_token(&self, token: &str) -> Result<Claims, anyhow::Error> {
         Ok(decode::<Claims>(
@@ -59,6 +65,8 @@ impl JwtClient {
         .claims)
     }
 
+    /// Given an incoming HTTP request, return the user currently logged in. If there is no
+    /// user logged in, generate a `403 Unauthorized` error response.
     #[tracing::instrument(name = "services::jwt::user_or_403", skip(self, request))]
     pub async fn user_or_403(&self, request: HttpRequest) -> Result<User, ApplicationError> {
         let auth_header = request
