@@ -1,2 +1,0 @@
-ALTER TABLE account
-ALTER COLUMN email DROP NOT NULL;
