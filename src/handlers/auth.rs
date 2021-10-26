@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     clients::postmark::PostmarkClient, db::NewForgottenPasswordRequest, db::NewUser, db::User,
-    handlers::auth::validate_request_with_basic_auth, services::jwt::JwtClient,
+    services::auth::validate_request_with_basic_auth, services::jwt::JwtClient,
 };
 
 use super::ApplicationResponse;
