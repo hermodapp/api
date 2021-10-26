@@ -86,7 +86,6 @@ pub async fn forgot_password(
         Some(e) => e,
         None => return Ok(HttpResponse::BadRequest().body("No email found.")),
     };
-
     let newfpr = NewForgottenPasswordRequest::new(user.id);
     newfpr.store(pool.as_ref()).await?;
     postmark_client
