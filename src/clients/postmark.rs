@@ -3,12 +3,13 @@ use std::collections::HashMap;
 use reqwest::Client;
 
 #[derive(Serialize)]
-pub enum EmailBody {
-    HtmlBody(String),
-    TextBody(String),
+pub enum EmailBody<'request> {
+    HtmlBody(&'request str),
+    TextBody(&'request str),
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct EmailJson<'client, 'request> {
     from: &'client str,
     to: &'request str,
@@ -16,18 +17,18 @@ pub struct EmailJson<'client, 'request> {
     bcc: Option<String>,
     subject: Option<String>,
     tag: Option<String>,
-    body: EmailBody,
-    replyto: Option<String>,
+    text_body: &'request str,
+    reply_to: Option<String>,
     headers: Option<Vec<String>>,
-    trackopens: Option<bool>,
-    tracklinks: Option<String>,
+    track_opens: Option<bool>,
+    track_links: Option<String>,
     metadata: Option<HashMap<String, String>>,
     attachments: Option<Vec<String>>,
-    messagestream: Option<String>,
+    message_stream: Option<String>,
 }
 
 impl<'client, 'request> EmailJson<'client, 'request> {
-    pub fn new_text(to: &'request str, from: &'client str, text: String) -> Self {
+    pub fn new(to: &'request str, from: &'client str, text_body: &'request str) -> Self {
         return Self {
             from,
             to,
@@ -35,33 +36,14 @@ impl<'client, 'request> EmailJson<'client, 'request> {
             bcc: None,
             subject: None,
             tag: None,
-            body: EmailBody::TextBody(text),
-            replyto: None,
+            text_body,
+            reply_to: None,
             headers: None,
-            trackopens: None,
-            tracklinks: None,
+            track_opens: None,
+            track_links: None,
             metadata: None,
             attachments: None,
-            messagestream: None,
-        }
-    }
-
-    pub fn new_html(to: &'request str, from: &'client str, html: String) -> Self {
-        return Self {
-            from,
-            to,
-            cc: None,
-            bcc: None,
-            subject: None,
-            tag: None,
-            body: EmailBody::HtmlBody(html),
-            replyto: None,
-            headers: None,
-            trackopens: None,
-            tracklinks: None,
-            metadata: None,
-            attachments: None,
-            messagestream: None,
+            message_stream: None,
         }
     }
 }
@@ -90,10 +72,9 @@ impl PostmarkClient {
     }
 
     #[tracing::instrument(name = "clients::postmark::send_email", skip(self))]
-    pub async fn send_email(&self, to: String, message: String) -> Result<(), reqwest::Error> {
+    pub async fn send_email(&self, to: &str, message: &str) -> Result<(), reqwest::Error> {
         let url = format!("{}email", self.base_url);
-
-        let json = EmailJson::new_text(&self.from, &to, message);
+        let json = EmailJson::new(&self.from, to, message);
 
         self.http_client
             .post(&url)

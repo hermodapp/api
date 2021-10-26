@@ -45,6 +45,7 @@ impl ResponseError for ApplicationError {
     }
 }
 
+
 pub fn json_response(data: impl serde::Serialize) -> ApplicationResponse {
     Ok(HttpResponse::Ok().json(data))
 }
@@ -63,6 +64,12 @@ impl From<sqlx::Error> for ApplicationError {
 
 impl From<serde_json::Error> for ApplicationError {
     fn from(e: serde_json::Error) -> Self {
+        Self::UnexpectedError(anyhow::anyhow!(e))
+    }
+}
+
+impl From<reqwest::Error> for ApplicationError {
+    fn from(e: reqwest::Error) -> Self {
         Self::UnexpectedError(anyhow::anyhow!(e))
     }
 }

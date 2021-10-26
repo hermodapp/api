@@ -6,7 +6,7 @@ use crate::configuration::DatabaseSettings;
 use crate::handlers::{
     delete_qr_code, edit_qr_code, get_qr_code_data, health_check, list_qr_codes, login,
     logout, register, store_form, store_qr_code, who_am_i, get_form, 
-    store_form_response, view_forms, edit_form
+    store_form_response, view_forms, edit_form, test_email
 };
 use crate::jwt::JwtClient;
 use crate::clients::postmark::PostmarkClient;
@@ -128,6 +128,7 @@ fn run(
             .route("/form/view", web::get().to(view_forms))
             .route("/form/edit", web::get().to(get_form))
             .route("/form/edit", web::post().to(edit_form))
+            .route("/form/test", web::get().to(test_email))
             .app_data(db_pool.clone())
             .app_data(jwt_client.clone())
             .app_data(twilio_client.clone())

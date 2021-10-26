@@ -6,7 +6,7 @@ use uuid::Uuid;
 use std::collections::HashMap;
 
 use super::ApplicationResponse;
-use crate::{db::NewForm, db::NewResponse, handlers::ApplicationError, jwt::JwtClient};
+use crate::{db::NewForm, db::NewResponse, handlers::ApplicationError, jwt::JwtClient, clients::postmark::PostmarkClient};
 
 #[derive(Debug, Deserialize)]
 pub struct ViewFormQuery {
@@ -394,4 +394,13 @@ pub async fn edit_form(
     tx.commit().await?;
 
     Ok(HttpResponse::Ok().body(format!("Successfully edited form with id {}", query.id)))
+}
+
+#[tracing::instrument(name = "handlers::form::test_email", skip(postmark_client))]
+/// post(form/edit) runs an SQL query to edit a form
+pub async fn test_email(
+    postmark_client: web::Data<PostmarkClient>,
+) -> ApplicationResponse {
+    postmark_client.send_email("japence@crimson.ua.edu", "Hello, Postmark!").await?;
+    Ok(HttpResponse::Ok().body(format!("E-mail request made to Postmark")))
 }
