@@ -6,7 +6,7 @@ use crate::configuration::DatabaseSettings;
 use crate::handlers::{
     delete_qr_code, edit_qr_code, get_qr_code_data, health_check, list_qr_codes, login,
     logout, register, store_form, store_qr_code, who_am_i, get_form, 
-    store_form_response, view_forms, edit_form, test_email
+    store_form_response, view_forms, edit_form, test_email, forgot_password, reset_password
 };
 use crate::jwt::JwtClient;
 use crate::clients::postmark::PostmarkClient;
@@ -116,6 +116,8 @@ fn run(
             .route("/logout", web::get().to(logout))
             .route("/whoami", web::get().to(who_am_i))
             .route("/register", web::post().to(register))
+            .route("/password/forgot", web::post().to(forgot_password))
+            .route("/password/reset", web::post().to(reset_password))
             .route("/health_check", web::get().to(health_check))
             .route("/qr_code", web::get().to(get_qr_code_data))
             .route("/qr_codes", web::get().to(list_qr_codes))
