@@ -5,12 +5,26 @@ set dotenv-load := true
 _default:
     @just --list
 
-# Start Docker containers
-start:
+_install:
 	#!/usr/bin/env bash
 	set -euxo pipefail
-	cargo install sqlx-cli
+	if ! command -v sqlx 
+	then
+		cargo install sqlx-cli
+	fi	
+	if ! command -v bunyan 
+	then
+		cargo install bunyan
+	fi	
+	if ! command -v cargo llvm-cov
+	then
+		cargo install llvm-cov
+	fi
 
+# Start Docker containers
+start: _install
+	#!/usr/bin/env bash
+	set -euxo pipefail
 	if [ ! $( docker ps | grep postgres | wc -l ) -gt 0 ]; then
 		./scripts/init_db.sh
 	fi
@@ -56,3 +70,4 @@ ci: coverage
 # Update sqlx-data.json
 sqlx: 
 	cargo sqlx prepare -- --lib
+	
