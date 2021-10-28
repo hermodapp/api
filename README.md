@@ -34,7 +34,12 @@
 brew install rustup postgres # Install Rustup and psql command line tool 
 brew cask install docker # Install Docker
 
-# Build and run application
+# Build and run application with Just buildtool
+cargo install just
+just run
+just --list # list all other available commands
+
+# Build and run application without Just buildtool
 cargo install sqlx-cli # Install sqlx CLI, used by `init_db.sh` to create & migrate database
 ./scripts/init_db.sh # Starts and migrates a Postgres database using Docker
 ./scripts/init_collector.sh # Starts an Open Telemetry collector using Docker
