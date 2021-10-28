@@ -36,7 +36,7 @@ brew cask install docker # Install Docker
 
 # Build and run application with Just buildtool
 cargo install just
-just run
+just run # will install all Rust dependencies and run application
 just --list # list all other available commands
 
 # Build and run application without Just buildtool
