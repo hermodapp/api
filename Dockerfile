@@ -9,11 +9,11 @@ RUN cargo chef prepare  --recipe-path recipe.json
 FROM chef as builder
 COPY --from=planner /app/recipe.json recipe.json
 # Build our project dependencies, not our application!
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN cargo chef cook --recipe-path recipe.json
 COPY . .
 ENV SQLX_OFFLINE true
 # Build our project
-RUN cargo build --release --bin hermod-api
+RUN cargo build --bin hermod-api
 
 FROM debian:bullseye-slim AS runtime
 WORKDIR /app
@@ -23,7 +23,7 @@ RUN apt-get update -y \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/hermod-api hermod
+COPY --from=builder /app/target/debug/hermod-api hermod
 COPY configuration configuration
 ENV APP_ENVIRONMENT production
 ENTRYPOINT ["./hermod"]
