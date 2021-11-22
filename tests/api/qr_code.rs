@@ -62,8 +62,8 @@ async fn store_qr_code_data_rejects_unauthorized_users() {
     let slug = "1235";
     let response = client
         .get(&format!(
-            "{}/qr_code/store?generation_data={}&slug={}",
-            app.address, data, slug
+            "{}/qr_code/store?generation_data={}&slug={}&phone_number={}",
+            app.address, data, slug, ""
         ))
         .send()
         .await
@@ -83,8 +83,8 @@ async fn store_qr_code_data_accepts_valid_users() {
         .send_request_with_auth(
             Method::GET,
             format!(
-                "{}/qr_code/store?generation_data={}&slug={}",
-                app.address, data, slug
+                "{}/qr_code/store?generation_data={}&slug={}&phone_number={}",
+                app.address, data, slug, ""
             ),
         )
         .await
