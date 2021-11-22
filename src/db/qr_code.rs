@@ -6,4 +6,5 @@ pub struct QrCode {
     pub account_id: Uuid,
     pub slug: String,
     pub generation_data: String,
+    pub phone_number: Option<String>,
 }

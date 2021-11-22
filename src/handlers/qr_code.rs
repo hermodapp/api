@@ -127,6 +127,7 @@ pub async fn delete_qr_code(
 pub struct NewQrCodeRequest {
     pub generation_data: String,
     pub slug: String,
+    pub phone_number: String,
 }
 
 #[tracing::instrument(name = "hadlers::qr_code::store", skip(pool, query, jwt), fields(username=Empty, user_id=Empty))]
@@ -143,12 +144,13 @@ pub async fn store_qr_code(
 
     sqlx::query!(
         r#"
-            INSERT INTO qr_code (id, account_id, slug, generation_data)
-            VALUES ($1, $2, $3, $4)"#,
+            INSERT INTO qr_code (id, account_id, slug, generation_data, phone_number)
+            VALUES ($1, $2, $3, $4, $5)"#,
         Uuid::new_v4(),
         user.id,
         query.slug,
-        query.generation_data
+        query.generation_data,
+        query.phone_number
     )
     .execute(pool.as_ref())
     .await?;

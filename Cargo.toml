@@ -55,3 +55,6 @@ features = [
 actix-rt = "2.0.2"
 once_cell = "1.7.2"
 wiremock = "0.5"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
