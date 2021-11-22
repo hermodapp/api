@@ -59,13 +59,15 @@ pub async fn view_form_responses(
 ) -> ApplicationResponse {
     let _current_user = jwt.user_or_403(request).await?;
 
-    let form_title = sqlx::query!(
-        r#"SELECT title FROM form
+    let form = sqlx::query!(
+        r#"SELECT * FROM form
         WHERE id = $1"#,
         form_id
     )
     .fetch_one(pool.as_ref())
     .await?;
+
+    let title = form.title.unwrap();
 
     let fields = sqlx::query!(
         r#"SELECT * FROM form_input
@@ -116,7 +118,7 @@ pub async fn view_form_responses(
     }
 
     let view_form_responses_data = ViewFormResponse {
-        title: form_title.title.unwrap(),
+        title,
         questions,
         responses,
     };
