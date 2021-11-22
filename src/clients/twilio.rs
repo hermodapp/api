@@ -31,7 +31,14 @@ impl TwilioClient {
 
     /// Send an SMS message using Twilio's API
     #[tracing::instrument(name = "clients::twilio::send_sms", skip(self))]
-    pub async fn send_sms(&self, to: String, message: String) -> Result<(), reqwest::Error> {
+    pub async fn send_sms(&self, to: String, message: String) -> Result<(), anyhow::Error> {
+        if to.len() != 12 {
+            return Err(anyhow::anyhow!("Phone number must be 12 characters long"));
+        }
+        if to.chars().nth(0) != Some("+".chars().next().unwrap()) {
+            return Err(anyhow::anyhow!("Phone number must begin with +"));
+        }
+
         let url = format!("{}Accounts/{}/Messages", self.base_url, &self.account_sid);
         let message = urlencoding::encode(&message);
         let body = format!("Body={}&To={}&From={}", message, to, self.from);
@@ -49,7 +56,14 @@ impl TwilioClient {
 
     /// Send a phone call using Twilio's API
     #[tracing::instrument(name = "clients::twilio::send_call", skip(self))]
-    pub async fn send_call(&self, to: String, message: String) -> Result<(), reqwest::Error> {
+    pub async fn send_call(&self, to: String, message: String) -> Result<(), anyhow::Error> {
+        if to.len() != 12 {
+            return Err(anyhow::anyhow!("Phone number must be 12 characters long"));
+        }
+        if to.chars().nth(0) != Some("+".chars().next().unwrap()) {
+            return Err(anyhow::anyhow!("Phone number must begin with +"));
+        }
+
         let url = format!("{}Accounts/{}/Calls.json", self.base_url, &self.account_sid);
         let message = urlencoding::encode(&message);
         let twiml = format!("<Response><Say>{}</Say></Response>", message);
