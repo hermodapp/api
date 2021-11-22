@@ -47,21 +47,6 @@
       "nullable": []
     }
   },
-  "1873be894d87e6de0d87ee4915588c01bb3d13600db3193322ba577138a38e7c": {
-    "query": "\n            INSERT INTO qr_code (id, account_id, slug, generation_data)\n            VALUES ($1, $2, $3, $4)",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Uuid",
-          "Text",
-          "Text"
-        ]
-      },
-      "nullable": []
-    }
-  },
   "22b320558f060375a55db401bdfe885d19e5c249b82a67be2eee541fb9b04f94": {
     "query": "SELECT * FROM form_input\n           WHERE form_id = $1",
     "describe": {
@@ -451,6 +436,22 @@
       "nullable": []
     }
   },
+  "8fe7fe71dbb7bca08a80bc8604612c93d3241cbe25e734ae3c5cb7d897583d48": {
+    "query": "\n            INSERT INTO qr_code (id, account_id, slug, generation_data, phone_number)\n            VALUES ($1, $2, $3, $4, $5)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "Text",
+          "Text",
+          "Varchar"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "9a4ec936d0b3216a03993f5229d5be6925032b1d2ba7ff5170c985411c4c3480": {
     "query": "INSERT INTO form_input (id, form_id, type, caption)\n                       VALUES($1, $2, $3, $4)",
     "describe": {
@@ -518,6 +519,11 @@
           "ordinal": 3,
           "name": "generation_data",
           "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "phone_number",
+          "type_info": "Varchar"
         }
       ],
       "parameters": {
@@ -529,7 +535,8 @@
         false,
         false,
         false,
-        false
+        false,
+        true
       ]
     }
   },
@@ -622,6 +629,11 @@
           "ordinal": 3,
           "name": "generation_data",
           "type_info": "Text"
+        },
+        {
+          "ordinal": 4,
+          "name": "phone_number",
+          "type_info": "Varchar"
         }
       ],
       "parameters": {
@@ -633,7 +645,8 @@
         false,
         false,
         false,
-        false
+        false,
+        true
       ]
     }
   },
