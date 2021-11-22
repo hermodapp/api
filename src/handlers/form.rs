@@ -44,6 +44,7 @@ pub struct ResponseGroup {
 
 #[derive(Serialize)]
 pub struct ViewFormResponse {
+    pub title: String,
     pub questions: HashMap<Uuid, String>,
     pub responses: Vec<ResponseGroup>,
 }
@@ -57,6 +58,14 @@ pub async fn view_form_responses(
     jwt: web::Data<JwtClient>,
 ) -> ApplicationResponse {
     let _current_user = jwt.user_or_403(request).await?;
+
+    let form_title = sqlx::query!(
+        r#"SELECT title FROM form
+        WHERE id = $1"#,
+        form_id
+    )
+    .fetch_one(pool.as_ref())
+    .await?;
 
     let fields = sqlx::query!(
         r#"SELECT * FROM form_input
@@ -107,6 +116,7 @@ pub async fn view_form_responses(
     }
 
     let view_form_responses_data = ViewFormResponse {
+        title: form_title.title.unwrap(),
         questions,
         responses,
     };
