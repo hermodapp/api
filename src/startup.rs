@@ -5,7 +5,7 @@ use crate::clients::postmark::PostmarkClient;
 use crate::clients::twilio::TwilioClient;
 use crate::handlers::{
     delete_qr_code, edit_form, edit_qr_code, forgot_password, generate_qr_code, get_form,
-    health_check, list_qr_codes, login, logout, register, reset_password, store_form,
+    health_check, list_qr_codes, login, logout, register, reset_password, scan, store_form,
     store_form_response, test_email, view_forms, who_am_i,
 };
 use crate::services::configuration::DatabaseSettings;
@@ -119,6 +119,7 @@ fn run(
             .wrap(cors)
             .wrap(TracingLogger::default())
             .route("/login", web::get().to(login))
+            .route("/scan", web::get().to(scan))
             .route("/logout", web::get().to(logout))
             .route("/whoami", web::get().to(who_am_i))
             .route("/register", web::post().to(register))
