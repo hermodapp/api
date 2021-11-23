@@ -185,16 +185,22 @@ pub async fn scan(
         .fetch_one(pool.as_ref())
         .await?;
 
-    // Check if there is an assosciated phone number with this QR code
-    if let Some(phone_number) = qr_code.phone_number {
-        twilio
-            .send_call(phone_number, "message".to_string())
-            .await?;
-    }
+    if qr_code.phone_number.is_some() || qr_code.email.is_some() {
+        let message = qr_code.payload.ok_or_else(|| {
+            ApplicationError::UnexpectedError(anyhow::anyhow!(
+                "expect qr_code.payload when qr_code.phone_number or qr_code.email is defined"
+            ))
+        })?;
 
-    // Check if there is an assosciated email address with this QR code
-    if let Some(email) = qr_code.email {
-        mail.send_email(&email, "message").await?;
+        // Check if there is an assosciated phone number with this QR code
+        if let Some(phone_number) = qr_code.phone_number {
+            twilio.send_call(phone_number, message.clone()).await?;
+        }
+
+        // Check if there is an assosciated email address with this QR code
+        if let Some(email) = qr_code.email {
+            mail.send_email(&email, message.as_str()).await?;
+        }
     }
 
     // Check if there is an assosciated form with this QR code
