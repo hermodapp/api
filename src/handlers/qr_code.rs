@@ -1,9 +1,12 @@
+use std::str::FromStr;
+
 use actix_web::{web, HttpRequest, HttpResponse};
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use super::ApplicationResponse;
 use crate::{
+    clients::{postmark::PostmarkClient, twilio::TwilioClient},
     db::QrCode,
     handlers::{json_response, ApplicationError},
     services::auth::AuthenticationError,
@@ -164,4 +167,50 @@ pub async fn list_qr_codes(
     .fetch_all(pool.as_ref())
     .await?;
     json_response(&ListQrCodesResponse { qr_codes })
+}
+#[derive(Deserialize, Clone)]
+pub struct ScanQrCodeRequest {
+    pub id: String,
+}
+
+pub async fn scan(
+    pool: web::Data<PgPool>,
+    query: web::Query<ScanQrCodeRequest>,
+    twilio: web::Data<TwilioClient>,
+    mail: web::Data<PostmarkClient>,
+) -> ApplicationResponse {
+    let id = query.id.as_ref();
+    let id = Uuid::from_str(id).map_err(|e| anyhow::anyhow!(e))?;
+    let qr_code = sqlx::query!("select * from qr_code where id=$1", id)
+        .fetch_one(pool.as_ref())
+        .await?;
+
+    if qr_code.phone_number.is_some() || qr_code.email.is_some() {
+        let message = qr_code.payload.ok_or_else(|| {
+            ApplicationError::UnexpectedError(anyhow::anyhow!(
+                "expect qr_code.payload when qr_code.phone_number or qr_code.email is defined"
+            ))
+        })?;
+
+        // Check if there is an assosciated phone number with this QR code
+        if let Some(phone_number) = qr_code.phone_number {
+            twilio.send_call(phone_number, message.clone()).await?;
+        }
+
+        // Check if there is an assosciated email address with this QR code
+        if let Some(email) = qr_code.email {
+            mail.send_email(&email, message.as_str()).await?;
+        }
+    }
+
+    // Check if there is an assosciated form with this QR code
+    if let Some(form_id) = qr_code.form_id {
+        let mut x = HttpResponse::TemporaryRedirect();
+        x.append_header((
+            "Location",
+            format!("hermodapp.com/form/view?id={}", form_id),
+        ));
+        return Ok(x.finish());
+    }
+    Ok(HttpResponse::Ok().body("Thank you for scanning a Hermod QR Code."))
 }
