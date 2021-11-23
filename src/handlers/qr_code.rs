@@ -2,9 +2,8 @@ use std::str::FromStr;
 
 use crate::{
     clients::{postmark::PostmarkClient, twilio::TwilioClient},
-    db::Form,
 };
-use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use actix_web::{web, HttpRequest, HttpResponse};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -196,7 +195,7 @@ pub struct ScanQrCodeRequest {
 pub async fn scan(
     pool: web::Data<PgPool>,
     query: web::Query<ScanQrCodeRequest>,
-    twilio: web::Data<TwilioClient>,
+    _twilio: web::Data<TwilioClient>,
     _mail: web::Data<PostmarkClient>,
 ) -> ApplicationResponse {
     let id = query.id.as_ref();
