@@ -35,7 +35,7 @@ impl TwilioClient {
         if to.len() != 12 {
             return Err(anyhow::anyhow!("Phone number must be 12 characters long"));
         }
-        if to.chars().nth(0) != Some("+".chars().next().unwrap()) {
+        if !to.starts_with("+".chars().next().unwrap()) {
             return Err(anyhow::anyhow!("Phone number must begin with +"));
         }
 
@@ -60,7 +60,7 @@ impl TwilioClient {
         if to.len() != 12 {
             return Err(anyhow::anyhow!("Phone number must be 12 characters long"));
         }
-        if to.chars().nth(0) != Some("+".chars().next().unwrap()) {
+        if !to.starts_with("+".chars().next().unwrap()) {
             return Err(anyhow::anyhow!("Phone number must begin with +"));
         }
 

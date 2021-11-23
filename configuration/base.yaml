@@ -10,8 +10,8 @@ database:
   database_name: "hermod"
   require_ssl: false
 twilio:
-  account_sid: "ACb10051bdd7ea0a98dfdb32ab7077a461"
-  auth_token: "2aa3cced7cc1ccd27c756b1914fc2bfa"
+  account_sid: "DO_NOT_USE"
+  auth_token: "DO_NOT_USE"
   base_url: "https://api.twilio.com/2010-04-01/"
   from: "+15078892204"
 postmark:
