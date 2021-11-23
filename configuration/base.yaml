@@ -18,4 +18,3 @@ postmark:
   server_auth_token: "DO_NOT_USE"
   base_url: "https://api.postmarkapp.com/"
   from: "DO_NOT_USE"
-
