@@ -208,7 +208,7 @@ pub async fn scan(
         let mut x = HttpResponse::TemporaryRedirect();
         x.append_header((
             "Location",
-            format!("test.hermodapp.com/form/submit?id={}", form_id),
+            format!("hermodapp.com/form/view?id={}", form_id),
         ));
         return Ok(x.finish());
     }
