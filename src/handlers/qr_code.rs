@@ -1,4 +1,10 @@
-use actix_web::{web, HttpRequest, HttpResponse};
+use std::str::FromStr;
+
+use crate::{
+    clients::{postmark::PostmarkClient, twilio::TwilioClient},
+    db::Form,
+};
+use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -181,4 +187,45 @@ pub async fn list_qr_codes(
     .fetch_all(pool.as_ref())
     .await?;
     json_response(&ListQrCodesResponse { qr_codes })
+}
+#[derive(Deserialize, Clone)]
+pub struct ScanQrCodeRequest {
+    pub id: String,
+}
+
+pub async fn scan(
+    pool: web::Data<PgPool>,
+    query: web::Query<ScanQrCodeRequest>,
+    twilio: web::Data<TwilioClient>,
+    _mail: web::Data<PostmarkClient>,
+) -> ApplicationResponse {
+    let id = query.id.as_ref();
+    let id = Uuid::from_str(id).map_err(|e| anyhow::anyhow!(e))?;
+    let qr_code = sqlx::query!("select * from qr_code where id=$1", id)
+        .fetch_one(pool.as_ref())
+        .await?;
+
+    // Check if there is an assosciated phone number with this QR code
+    if let Some(_phone_number) = qr_code.phone_number {
+        // twilio
+        //     .send_call(phone_number, "message".to_string())
+        //     .await?;
+    }
+
+    // Check if there is an assosciated email address with this QR code
+    // if let Some(email) = qr_code.email_address {
+    //     mail.send_email(email, "message").await?;
+    // }
+
+    // Check if there is an assosciated form with this QR code
+    // if let Some(form_id) = qr_code.form_id {
+    //     println!("hooray!");
+    //     let mut x = HttpResponse::TemporaryRedirect();
+    //     x.append_header((
+    //         "Location",
+    //         format!("test.hermodapp.com/form/submit?id={}", form_id),
+    //     ));
+    //     return Ok(x.finish());
+    // }
+    Ok(HttpResponse::Ok().finish())
 }
