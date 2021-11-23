@@ -212,5 +212,5 @@ pub async fn scan(
         ));
         return Ok(x.finish());
     }
-    Ok(HttpResponse::Ok().finish())
+    Ok(HttpResponse::Ok().body("Thank you for scanning a Hermod QR Code."))
 }
