@@ -194,12 +194,16 @@ pub async fn scan(
 
         // Check if there is an assosciated phone number with this QR code
         if let Some(phone_number) = qr_code.phone_number {
-            twilio.send_call(phone_number, message.clone()).await?;
+            if phone_number != "" {
+                twilio.send_call(phone_number, message.clone()).await?;
+            }
         }
 
         // Check if there is an assosciated email address with this QR code
         if let Some(email) = qr_code.email {
-            mail.send_email(&email, message.as_str()).await?;
+            if &email != "" {
+                mail.send_email(&email, message.as_str()).await?;
+            }
         }
     }
 
@@ -208,7 +212,7 @@ pub async fn scan(
         let mut x = HttpResponse::TemporaryRedirect();
         x.append_header((
             "Location",
-            format!("hermodapp.com/form/view?id={}", form_id),
+            format!("https://hermodapp.com/form/submit?id={}", form_id),
         ));
         return Ok(x.finish());
     }
