@@ -74,7 +74,7 @@ impl PostmarkClient {
     #[tracing::instrument(name = "clients::postmark::send_email", skip(self))]
     pub async fn send_email(&self, to: &str, message: &str) -> Result<(), reqwest::Error> {
         let url = format!("{}email", self.base_url);
-        let json = EmailJson::new(&self.from, to, message);
+        let json = EmailJson::new(to, &self.from, message);
 
         let response = self
             .http_client
