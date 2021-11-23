@@ -76,7 +76,8 @@ impl PostmarkClient {
         let url = format!("{}email", self.base_url);
         let json = EmailJson::new(&self.from, to, message);
 
-        self.http_client
+        let response = self
+            .http_client
             .post(&url)
             .header("Accept", "application/json")
             .header("Content-Type", "application/json")
@@ -85,6 +86,7 @@ impl PostmarkClient {
             .send()
             .await?
             .error_for_status()?;
+        dbg!(response);
         Ok(())
     }
 }
