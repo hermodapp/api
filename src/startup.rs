@@ -4,9 +4,9 @@ use actix_cors::Cors;
 use crate::clients::postmark::PostmarkClient;
 use crate::clients::twilio::TwilioClient;
 use crate::handlers::{
-    delete_qr_code, edit_form, edit_qr_code, forgot_password, get_form, get_qr_code_data,
+    delete_qr_code, edit_form, edit_qr_code, forgot_password, generate_qr_code, get_form,
     health_check, list_qr_codes, login, logout, register, reset_password, store_form,
-    store_form_response, store_qr_code, test_email, view_forms, who_am_i,
+    store_form_response, test_email, view_forms, who_am_i,
 };
 use crate::services::configuration::DatabaseSettings;
 use crate::services::configuration::Settings;
@@ -125,9 +125,8 @@ fn run(
             .route("/password/forgot", web::post().to(forgot_password))
             .route("/password/reset", web::post().to(reset_password))
             .route("/health_check", web::get().to(health_check))
-            .route("/qr_code", web::get().to(get_qr_code_data))
             .route("/qr_codes", web::get().to(list_qr_codes))
-            .route("/qr_code/store", web::get().to(store_qr_code))
+            .route("/qr_code/generate", web::post().to(generate_qr_code))
             .route("/qr_code/edit", web::get().to(edit_qr_code))
             .route("/qr_code/delete", web::get().to(delete_qr_code))
             .route("/form/new", web::post().to(store_form))

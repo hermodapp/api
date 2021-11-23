@@ -12,66 +12,38 @@ use crate::{
 use serde::Deserialize;
 use tracing::field::Empty;
 
-#[derive(Deserialize)]
-pub struct GetQrCodeRequest {
-    pub slug: String,
-}
-
-#[derive(serde::Serialize)]
-pub struct GetQrCodeResponse {
-    pub generation_data: String,
-}
-
-#[tracing::instrument(name = "handlers::qr_code::get", skip(pool, query))]
-/// get(qr_code?slug={SLUG}) runs a sample SQL query and checks if the user is logged in
-pub async fn get_qr_code_data(
-    pool: web::Data<PgPool>,
-    query: web::Query<GetQrCodeRequest>,
-) -> ApplicationResponse {
-    if let Some(qr_code) = sqlx::query!("SELECT * FROM qr_code WHERE slug=$1", &query.slug)
-        .fetch_optional(pool.as_ref())
-        .await?
-    {
-        json_response(&GetQrCodeResponse {
-            generation_data: qr_code.generation_data,
-        })
-    } else {
-        Err(ApplicationError::NotFoundError(format!(
-            "No QR code found with slug {}",
-            &query.slug
-        )))
-    }
-}
-
 #[derive(Deserialize, Clone)]
 pub struct EditQrCodeRequest {
     pub id: Uuid,
-    pub generation_data: String,
-    pub slug: String,
+    pub phone_number: Option<String>,
+    pub email: Option<String>,
+    pub payload: Option<String>,
+    pub form_id: Option<Uuid>,
 }
 
-#[tracing::instrument(name = "handlers::qr_code::edit", skip(pool, query, jwt), fields(username=Empty, user_id=Empty))]
-/// get(/qr_code/edit?id={ID}&generation_data={DATA}&slug={SLUG}) edits a QR code with the relevant information
+#[tracing::instrument(name = "handlers::qr_code::edit", skip(pool, json, jwt), fields(user_id=Empty))]
+/// get(/qr_code/edit?id={ID}) edits a QR code with the relevant information
 pub async fn edit_qr_code(
     pool: web::Data<PgPool>,
-    query: web::Query<EditQrCodeRequest>,
+    json: web::Json<EditQrCodeRequest>,
     request: HttpRequest,
     jwt: web::Data<JwtClient>,
 ) -> ApplicationResponse {
     let user = jwt.user_or_403(request).await?;
-    tracing::Span::current().record("username", &tracing::field::display(&user.username));
     tracing::Span::current().record("user_id", &tracing::field::display(&user.id));
 
     let query = sqlx::query!(
         r#"
             UPDATE qr_code
-            SET generation_data=$2, slug=$3
-            WHERE id=$1 AND account_id=$4
+            SET phone_number=$2, email=$3, payload=$4, form_id=$5
+            WHERE id=$1 AND account_id=$6
             RETURNING true
         "#,
-        query.id,
-        query.generation_data,
-        query.slug,
+        json.id,
+        json.phone_number,
+        json.email,
+        json.payload,
+        json.form_id,
         user.id
     )
     .fetch_optional(pool.as_ref())
@@ -124,37 +96,48 @@ pub async fn delete_qr_code(
 }
 
 #[derive(Deserialize, Clone)]
-pub struct NewQrCodeRequest {
-    pub generation_data: String,
-    pub slug: String,
-    pub phone_number: String,
+pub struct GenerateQrCodeRequest {
+    pub phone_number: Option<String>,
+    pub email: Option<String>,
+    pub payload: Option<String>,
+    pub form_id: Option<Uuid>,
 }
 
-#[tracing::instrument(name = "hadlers::qr_code::store", skip(pool, query, jwt), fields(username=Empty, user_id=Empty))]
-/// get(/qr_code/store?generation_data={DATA}&slug={SLUG}) stores a QR code with the relevant information
-pub async fn store_qr_code(
+#[derive(serde::Serialize)]
+pub struct GenerateQrCodeResponse {
+    pub id: Uuid,
+}
+
+#[tracing::instrument(name = "hadlers::qr_code::generate", skip(pool, json, jwt), fields(user_id=Empty))]
+/// post(/qr_code/generate) generates a QR code with the relevant information
+pub async fn generate_qr_code(
     pool: web::Data<PgPool>,
-    query: web::Query<NewQrCodeRequest>,
+    json: web::Json<GenerateQrCodeRequest>,
     request: HttpRequest,
     jwt: web::Data<JwtClient>,
 ) -> ApplicationResponse {
     let user = jwt.user_or_403(request).await?;
-    tracing::Span::current().record("username", &tracing::field::display(&user.username));
     tracing::Span::current().record("user_id", &tracing::field::display(&user.id));
+
+    let qr_code_id = Uuid::new_v4();
 
     sqlx::query!(
         r#"
-            INSERT INTO qr_code (id, account_id, slug, generation_data, phone_number)
-            VALUES ($1, $2, $3, $4, $5)"#,
-        Uuid::new_v4(),
+            INSERT INTO qr_code (id, account_id, phone_number, email, payload, form_id)
+            VALUES ($1, $2, $3, $4, $5, $6)"#,
+        qr_code_id,
         user.id,
-        query.slug,
-        query.generation_data,
-        query.phone_number
+        json.phone_number,
+        json.email,
+        json.payload,
+        json.form_id,
     )
     .execute(pool.as_ref())
     .await?;
-    Ok(HttpResponse::Ok().finish())
+
+    let qr_code_generate_response = GenerateQrCodeResponse { id: qr_code_id };
+
+    Ok(HttpResponse::Ok().body(serde_json::to_string(&qr_code_generate_response).unwrap()))
 }
 
 #[derive(serde::Serialize)]
