@@ -1,8 +1,6 @@
 use std::str::FromStr;
 
-use crate::{
-    clients::{postmark::PostmarkClient, twilio::TwilioClient},
-};
+use crate::clients::{postmark::PostmarkClient, twilio::TwilioClient};
 use actix_web::{web, HttpRequest, HttpResponse};
 use sqlx::PgPool;
 use uuid::Uuid;
