@@ -85,6 +85,23 @@
       ]
     }
   },
+  "28874580118fe9ff1f4d78fd9171f42cf386b6122eac3c9c93954f9384ffdc4b": {
+    "query": "\n            INSERT INTO qr_code (id, account_id, phone_number, email, payload, form_id)\n            VALUES ($1, $2, $3, $4, $5, $6)",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Uuid"
+        ]
+      },
+      "nullable": []
+    }
+  },
   "2af90b788c8a99c55f21800c521de11a23cf7fbd69cd3f691f93a3376edff4b0": {
     "query": "SELECT * FROM account WHERE id=$1",
     "describe": {
@@ -436,22 +453,6 @@
       "nullable": []
     }
   },
-  "8fe7fe71dbb7bca08a80bc8604612c93d3241cbe25e734ae3c5cb7d897583d48": {
-    "query": "\n            INSERT INTO qr_code (id, account_id, slug, generation_data, phone_number)\n            VALUES ($1, $2, $3, $4, $5)",
-    "describe": {
-      "columns": [],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Uuid",
-          "Text",
-          "Text",
-          "Varchar"
-        ]
-      },
-      "nullable": []
-    }
-  },
   "9a4ec936d0b3216a03993f5229d5be6925032b1d2ba7ff5170c985411c4c3480": {
     "query": "INSERT INTO form_input (id, form_id, type, caption)\n                       VALUES($1, $2, $3, $4)",
     "describe": {
@@ -512,18 +513,23 @@
         },
         {
           "ordinal": 2,
-          "name": "slug",
-          "type_info": "Text"
+          "name": "phone_number",
+          "type_info": "Varchar"
         },
         {
           "ordinal": 3,
-          "name": "generation_data",
-          "type_info": "Text"
+          "name": "email",
+          "type_info": "Varchar"
         },
         {
           "ordinal": 4,
-          "name": "phone_number",
+          "name": "payload",
           "type_info": "Varchar"
+        },
+        {
+          "ordinal": 5,
+          "name": "form_id",
+          "type_info": "Uuid"
         }
       ],
       "parameters": {
@@ -534,8 +540,9 @@
       "nullable": [
         false,
         false,
-        false,
-        false,
+        true,
+        true,
+        true,
         true
       ]
     }
@@ -606,73 +613,6 @@
       ]
     }
   },
-  "e5311706b339c7a7601d9714939a25c17052943736973ea8a3ed0418825cf159": {
-    "query": "SELECT * FROM qr_code WHERE slug=$1",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "id",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 1,
-          "name": "account_id",
-          "type_info": "Uuid"
-        },
-        {
-          "ordinal": 2,
-          "name": "slug",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 3,
-          "name": "generation_data",
-          "type_info": "Text"
-        },
-        {
-          "ordinal": 4,
-          "name": "phone_number",
-          "type_info": "Varchar"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Text"
-        ]
-      },
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true
-      ]
-    }
-  },
-  "e873afb77e7c93411956d4dc58229740ce1dfe150770b26ca849896c0f3b50ac": {
-    "query": "\n            UPDATE qr_code\n            SET generation_data=$2, slug=$3\n            WHERE id=$1 AND account_id=$4\n            RETURNING true\n        ",
-    "describe": {
-      "columns": [
-        {
-          "ordinal": 0,
-          "name": "bool",
-          "type_info": "Bool"
-        }
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Text",
-          "Text",
-          "Uuid"
-        ]
-      },
-      "nullable": [
-        null
-      ]
-    }
-  },
   "f84b035bd0c3bac1c68808ad1bdca5fadff8a4785666bd50c85b0c588181a4c8": {
     "query": "DELETE FROM feedback\n                           WHERE form_input_id = $1",
     "describe": {
@@ -714,6 +654,31 @@
         false,
         false,
         false
+      ]
+    }
+  },
+  "fb48cbda168ce82294cb4405d140b2a268fec949b96a3042eb767cee4487620b": {
+    "query": "\n            UPDATE qr_code\n            SET phone_number=$2, email=$3, payload=$4, form_id=$5\n            WHERE id=$1 AND account_id=$6\n            RETURNING true\n        ",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "bool",
+          "type_info": "Bool"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Uuid",
+          "Uuid"
+        ]
+      },
+      "nullable": [
+        null
       ]
     }
   },
