@@ -140,6 +140,56 @@
       ]
     }
   },
+  "31cceccb0f0c1b3c32b7bc0441c90f49f31caa69161f035f719657aead4f6699": {
+    "query": "select * from qr_code where id=$1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 1,
+          "name": "account_id",
+          "type_info": "Uuid"
+        },
+        {
+          "ordinal": 2,
+          "name": "phone_number",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "email",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 4,
+          "name": "payload",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 5,
+          "name": "form_id",
+          "type_info": "Uuid"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  },
   "33e19421ff6181f9b709a11a580fe017b52042ec2485b8e705e7fc9c094eade3": {
     "query": "UPDATE form_input\n                           SET caption = $1, type = $2\n                           WHERE id = $3",
     "describe": {
