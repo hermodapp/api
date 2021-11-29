@@ -194,14 +194,14 @@ pub async fn scan(
 
         // Check if there is an assosciated phone number with this QR code
         if let Some(phone_number) = qr_code.phone_number {
-            if phone_number != "" {
+            if !phone_number.is_empty() {
                 twilio.send_call(phone_number, message.clone()).await?;
             }
         }
 
         // Check if there is an assosciated email address with this QR code
         if let Some(email) = qr_code.email {
-            if &email != "" {
+            if !&email.is_empty() {
                 mail.send_email(&email, message.as_str()).await?;
             }
         }

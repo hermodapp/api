@@ -1,7 +1,7 @@
-use reqwest::Method;
-use uuid::Uuid;
 
-use crate::helpers::spawn_app;
+
+
+
 
 /* TODO: Rewrite tests pending QR code generation/management refactor.
  *
