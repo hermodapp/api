@@ -1,8 +1,3 @@
-
-
-
-
-
 /* TODO: Rewrite tests pending QR code generation/management refactor.
  *
 #[actix_rt::test]
